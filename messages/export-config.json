@@ -1,4 +1,3 @@
 {
-    "commandDescription": "export Plauti Duplicate Check configuration",
-    "errorNoOrgResults": "No results found for the org '%s'."
+    "commandDescription": "export Plauti Duplicate Check configuration"
   }

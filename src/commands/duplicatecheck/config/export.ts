@@ -1,6 +1,7 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 import { Messages, SfdxError, Org, Connection } from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
+import * as fs from 'fs-extra';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -18,13 +19,13 @@ export default class ExportConfig extends SfdxCommand {
   `
   ];
 
-  public static args = [{name: 'file'}];
+//   public static args = [{name: 'file'}];
 
-  protected static flagsConfig = {
+//   protected static flagsConfig = {
     // flag with a value (-n, --name=VALUE)
-    // name: flags.string({char: 'n', description: messages.getMessage('nameFlagDescription')}),
+        // name: flags.string({char: 'f', description: messages.getMessage('fileFlagDescription')}),
     // force: flags.boolean({char: 'f', description: messages.getMessage('forceFlagDescription')})
-  };
+//   };
 
   // Comment this out if your command does not require an org username
   protected static requiresUsername = true;
@@ -35,14 +36,18 @@ export default class ExportConfig extends SfdxCommand {
   // Set this to true if your command requires a project workspace; 'requiresProject' is false by default
   protected static requiresProject = false;
 
+  protected static exportDir = './export/';
+
   public async run(): Promise<AnyJson> {
 
-    // this.org is guaranteed because requiresUsername=true, as opposed to supportsUsername
+    this.ux.startSpinner(`Downloading from export file`);
+    await fs.ensureDir(ExportConfig.exportDir);
+    
     const conn = this.org.getConnection();
 
     this.ux.log(`${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/search`);
     this.ux.log(`Bearer ${conn.accessToken}`);
-    
+
     const searchInput = {
         objectPrefix : "00Q",
         objectData : {
@@ -62,16 +67,21 @@ export default class ExportConfig extends SfdxCommand {
 
     const logger = this.ux;
     let exportContent = null;
+    const targetFilename = ExportConfig.exportDir + new Date().toISOString + '.json';
+
     await conn.requestRaw(defaultRequest)
         .then(function (response) {
-            logger.log('OK');
             logger.log(JSON.stringify(response.body));
             exportContent = response.body;
         })
         .catch(function (err) {
             logger.errorJson(err);
         });
-
-        return { orgId: this.org.getOrgId(), exportContent};
+        
+        await fs.writeFile(`${targetFilename}`, exportContent);
+        this.ux.stopSpinner('Done!');
+        return { 
+            path: targetFilename 
+        };
   }
 }
