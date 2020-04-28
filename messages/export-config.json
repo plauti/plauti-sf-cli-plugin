@@ -1,3 +1,5 @@
 {
-    "commandDescription": "export Plauti Duplicate Check configuration"
-  }
+    "commandDescription": "export Plauti Duplicate Check configuration",
+    "directoryFlagDescription": "Export directory",
+    "fileFlagDescription": "Export file name"
+}
