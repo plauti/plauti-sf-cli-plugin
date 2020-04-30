@@ -7,15 +7,13 @@ Messages.importMessagesDirectory(__dirname);
 
 const messages = Messages.loadMessages('plauti-sfdx', 'export-config');
 
-export default class ExportConfig extends SfdxCommand {
+export default class RefreshLicense extends SfdxCommand {
 
     public static description = messages.getMessage('commandDescription');
 
     public static examples = [
-        `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com`
+        `$ sfdx plauti:duplicatecheck:license:refresh --targetusername myOrg@example.com`
     ];
-
-    public static args = [{ name: 'file' }];
 
     protected static requiresUsername = true;
     protected static supportsDevhubUsername = true;
@@ -25,51 +23,29 @@ export default class ExportConfig extends SfdxCommand {
     public async run(): Promise<AnyJson> {
 
         const conn = this.org.getConnection();
-
-        const searchInput = {
-            objectPrefix: "00Q",
-            objectData: {
-                firstName: 'woj'
-            }
-        }
-
         const defaultRequest = {
             json: true,
             headers: {
                 Authorization: `Bearer ${conn.accessToken}`
             },
-            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/search`,
+            url: `${conn.instanceUrl}/services/apexresdt/dupcheck/dc3Api/admin/refresh-license`,
             method: 'post',
-            body: JSON.stringify(searchInput)
         };
 
         const ux = this.ux;
-        let filePath = '';
-
-        if (this.args.file) {
-            filePath = this.args.file;
-        } else {
-            filePath = __dirname + ExportConfig.defaultExportDirectory + (new Date().toISOString() + '.json');
-        }
-
-        let exportContent = null;
-        this.ux.startSpinner(`Downloading export file`);
+        this.ux.startSpinner(`Refreshing license`);
         await conn.requestRaw(defaultRequest)
             .then(function (response) {
                 if (response.statusCode != 200){
                     ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to download export file. ' + response.statusCode);
+                    throw new SfdxError('Failed to refresh license. ' + response.statusCode);
                 } else {
-                    exportContent = response.body;
                     ux.stopSpinner('Done!');
                 }
             });
 
-        await fs.writeFile(`${filePath}`, exportContent);
-        ux.log('File: ' + filePath);
-
         return {
-            path: filePath
+            status: 'done'
         };
     }
 }
