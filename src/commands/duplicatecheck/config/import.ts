@@ -5,11 +5,9 @@ import * as fs from 'fs-extra';
 
 Messages.importMessagesDirectory(__dirname);
 
-const messages = Messages.loadMessages('plauti-sfdx', 'export-config');
-
 export default class ImportConfig extends SfdxCommand {
 
-    public static description = messages.getMessage('commandDescription');
+    public static description = 'Import Plauti Duplicate Check configuration'
 
     public static examples = [
         `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com`

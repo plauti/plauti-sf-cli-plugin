@@ -4,11 +4,9 @@ import { AnyJson } from '@salesforce/ts-types';
 
 Messages.importMessagesDirectory(__dirname);
 
-const messages = Messages.loadMessages('plauti-sfdx', 'export-config');
-
 export default class RefreshLicense extends SfdxCommand {
 
-    public static description = messages.getMessage('commandDescription');
+    public static description = 'Refresh license'
 
     public static examples = [
         `$ sfdx plauti:duplicatecheck:license:refresh --targetusername myOrg@example.com`

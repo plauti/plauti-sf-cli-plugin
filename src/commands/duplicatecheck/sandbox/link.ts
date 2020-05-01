@@ -4,14 +4,12 @@ import { AnyJson } from '@salesforce/ts-types';
 
 Messages.importMessagesDirectory(__dirname);
 
-const messages = Messages.loadMessages('plauti-sfdx', 'export-config');
-
 export default class LinkSandbox extends SfdxCommand {
 
-    public static description = messages.getMessage('commandDescription');
+    public static description = 'Link Sandbox to Production';
 
     public static examples = [
-        `$ sfdx plauti:duplicatecheck:sandbox:link --targetusername myOrg@example.com`
+        `$ sfdx plauti:duplicatecheck:sandbox:link --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA --sandboxname mysandbox`
     ];
 
     protected static requiresUsername = true;
@@ -20,12 +18,12 @@ export default class LinkSandbox extends SfdxCommand {
 
     protected static flagsConfig: FlagsConfig = {
         organizationId: flags.string({
-            char: 'p',
-            description: 'Production alias',
+            char: 'o',
+            description: 'Production organization id',
             required: true
         }),
         sandboxName: flags.string({
-            char: 'p',
+            char: 's',
             description: 'Sandbox name',
             required: true
         })

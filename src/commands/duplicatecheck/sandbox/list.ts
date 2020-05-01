@@ -4,11 +4,9 @@ import { AnyJson } from '@salesforce/ts-types';
 
 Messages.importMessagesDirectory(__dirname);
 
-const messages = Messages.loadMessages('plauti-sfdx', 'export-config');
-
 export default class ListSandbox extends SfdxCommand {
 
-    public static description = messages.getMessage('commandDescription');
+    public static description = 'List all sandbox orgs';
 
     public static examples = [
         `$ sfdx plauti:duplicatecheck:sandbox:list --targetusername myOrg@example.com`

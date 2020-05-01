@@ -4,14 +4,12 @@ import { AnyJson } from '@salesforce/ts-types';
 
 Messages.importMessagesDirectory(__dirname);
 
-const messages = Messages.loadMessages('plauti-sfdx', 'export-config');
-
 export default class LinkSandbox extends SfdxCommand {
 
-    public static description = messages.getMessage('commandDescription');
+    public static description = 'Unlink Sandbox from Production';
 
     public static examples = [
-        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com`
+        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --orgid 00DR0000001ossaMAA`
     ];
 
     protected static requiresUsername = true;
@@ -20,8 +18,8 @@ export default class LinkSandbox extends SfdxCommand {
 
     protected static flagsConfig: FlagsConfig = {
         organizationId: flags.string({
-            char: 'p',
-            description: 'Production alias',
+            char: 'o',
+            description: 'Production org id',
             required: true
         })
     };
@@ -44,12 +42,12 @@ export default class LinkSandbox extends SfdxCommand {
         };
 
         const ux = this.ux;
-        this.ux.startSpinner(`Linking sandbox`);
+        this.ux.startSpinner(`Unlinking sandbox`);
         await conn.requestRaw(defaultRequest)
             .then(function (response) {
                 if (response.statusCode != 200){
                     ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to link sanbox. ' + response.statusCode);
+                    throw new SfdxError('Failed to unlink sanbox. ' + response.statusCode);
                 } else {
                     ux.stopSpinner('Done!');
                 }
