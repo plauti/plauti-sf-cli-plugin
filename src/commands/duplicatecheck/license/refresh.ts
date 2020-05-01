@@ -1,7 +1,6 @@
-import { flags, SfdxCommand } from '@salesforce/command';
-import { Messages, SfdxError, Org, Connection } from '@salesforce/core';
+import { SfdxCommand } from '@salesforce/command';
+import { Messages, SfdxError} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
-import * as fs from 'fs-extra';
 
 Messages.importMessagesDirectory(__dirname);
 
@@ -18,7 +17,6 @@ export default class RefreshLicense extends SfdxCommand {
     protected static requiresUsername = true;
     protected static supportsDevhubUsername = true;
     protected static requiresProject = false;
-    protected static defaultExportDirectory = '/export/';
 
     public async run(): Promise<AnyJson> {
 

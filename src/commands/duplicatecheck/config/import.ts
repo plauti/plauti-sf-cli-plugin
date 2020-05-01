@@ -1,5 +1,5 @@
-import { flags, SfdxCommand } from '@salesforce/command';
-import { Messages, SfdxError, Org, Connection } from '@salesforce/core';
+import { SfdxCommand } from '@salesforce/command';
+import { Messages, SfdxError} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
 import * as fs from 'fs-extra';
 
