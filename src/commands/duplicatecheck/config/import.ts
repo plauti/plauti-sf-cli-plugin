@@ -7,7 +7,7 @@ Messages.importMessagesDirectory(__dirname);
 
 const messages = Messages.loadMessages('plauti-sfdx', 'export-config');
 
-export default class ExportConfig extends SfdxCommand {
+export default class ImportConfig extends SfdxCommand {
 
     public static description = messages.getMessage('commandDescription');
 
@@ -25,46 +25,53 @@ export default class ExportConfig extends SfdxCommand {
     public async run(): Promise<AnyJson> {
 
         const conn = this.org.getConnection();
-
-        const defaultRequest = {
-            json: true,
-            headers: {
-                Authorization: `Bearer ${conn.accessToken}`
-            },
-            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/export-config`,
-            method: 'post'
-        };
-
-        const ux = this.ux;
         let filePath = '';
 
         if (this.args.file) {
             filePath = this.args.file;
         } else {
-            filePath = __dirname + ExportConfig.defaultExportDirectory + (new Date().toISOString() + '.json');
+            throw new SfdxError('Failed to import file.');
         }
 
-        let exportContent = null;
-        this.ux.startSpinner(`Downloading export file`);
+        this.ux.log('File: ' + filePath);
+
+        let stats = fs.statSync(filePath);
+
+        if (!stats.isFile){
+            throw new SfdxError('File not found: ' + filePath);
+        } else if (stats.isDirectory()){
+            throw new SfdxError('Can not import directory: ' + filePath);
+        }
+
+        let fileContent = fs.readFileSync(filePath, 'utf8');
+
+        const defaultRequest = {
+            json: true,
+            headers: {
+                Authorization: `Bearer ${conn.accessToken}`,
+                "Content-Type" : "application/json; charset=utf-8"
+            },
+            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/import-config`,
+            method: 'post',
+            body: fileContent
+        };
+
+        const ux = this.ux;
+
+        this.ux.startSpinner(`Importing configuration file`);
         await conn.requestRaw(defaultRequest)
             .then(function (response) {
                 if (response.statusCode != 200){
+                    console.log(response.body);
                     ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to download export file. ' + response.statusCode);
+                    throw new SfdxError('Failed to import configuration file. ' + response.statusCode);
                 } else {
-                    exportContent = response.body;
                     ux.stopSpinner('Done!');
                 }
             });
 
-        await fs.writeFile(`${filePath}`, exportContent, {
-            encoding: "utf-8",
-            flag: "w"
-        });
-        ux.log('File: ' + filePath);
-
         return {
-            path: filePath
+            ok: 'true'
         };
     }
 }
