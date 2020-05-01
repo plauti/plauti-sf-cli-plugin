@@ -28,9 +28,9 @@ export default class ImportConfig extends SfdxCommand {
     public async run(): Promise<AnyJson> {
 
         const conn = this.org.getConnection();
+        conn.cache.clear();
 
         let filePath = this.flags.file;
-
         let stats = fs.statSync(filePath);
 
         if (!stats.isFile){
@@ -41,11 +41,12 @@ export default class ImportConfig extends SfdxCommand {
 
         let fileContent = fs.readFileSync(filePath, 'utf-8');
 
-        const defaultRequest = {
-            json: true,
+        const submitRequest = {
+            json: false,
             headers: {
                 Authorization: `Bearer ${conn.accessToken}`,
-                "Content-Type" : "application/json; charset=utf-8"
+                "Content-Type" : "application/json; charset=utf-8",
+                'Cache-Control': 'no-cache'
             },
             url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/import-config`,
             method: 'post',
@@ -53,21 +54,79 @@ export default class ImportConfig extends SfdxCommand {
         };
 
         const ux = this.ux;
-
         this.ux.startSpinner(`Importing configuration file`);
-        await conn.requestRaw(defaultRequest)
+        let jobId = null;
+        await conn.requestRaw(submitRequest)
             .then(function (response) {
+                // console.log(response.body);
                 if (response.statusCode != 200){
-                    console.log(response.body);
                     ux.stopSpinner('Failed!');
                     throw new SfdxError('Failed to import configuration file. ' + response.statusCode);
                 } else {
-                    ux.stopSpinner('Done!');
+                    let body = JSON.parse(response.body.toString());
+                    jobId = body.jobId;
                 }
             });
+
+        if (jobId == null){
+            throw new SfdxError('Failed to upload file, not job id.');
+        }
+    
+        const pollRequest = {
+            json: true,
+            headers: {
+                Authorization: `Bearer ${conn.accessToken}`,
+                "Content-Type" : "application/json; charset=utf-8",
+                'Cache-Control': 'no-cache'
+            },
+            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/import-config-job-stats`,
+            method: 'post',
+            body: jobId
+        };
+
+        let jobDone = false;
+
+        while (!jobDone) {
+            await sleep(3000);
+            console.log('Sleep');
+            await conn.requestRaw(pollRequest)
+                .then(function (response) {
+                    // console.log(response.body);
+                    if (response.statusCode != 200){
+                        ux.stopSpinner('Failed!');
+                        throw new SfdxError('Failed to import configuration file. ' + response.statusCode);
+                    } else {
+                        let body = JSON.parse(response.body.toString());
+
+                        switch (body.Status) {
+                            case 'Completed':
+                                ux.stopSpinner('Done!');
+                                jobDone = true;
+                                break;
+                            case 'Failed':
+                                ux.stopSpinner('Failed!');
+                                jobDone = true;
+                                throw new SfdxError('Failed to import configuration file: ' + body.ExtendedStatus);
+                            case 'Aborted':
+                                ux.stopSpinner('Failed!');
+                                jobDone = true;
+                                throw new SfdxError('Failed to import configuration file: ' + body.ExtendedStatus);
+                            default:
+                                break;
+                        }
+                    }
+                });
+        }
 
         return {
             ok: 'true'
         };
+
+        function sleep(ms: number) {
+            return new Promise((resolve) => {
+              setTimeout(resolve, ms);
+            });
+          }   
     }
+    
 }
