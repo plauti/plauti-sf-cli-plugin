@@ -1,4 +1,4 @@
-import { SfdxCommand } from '@salesforce/command';
+import { SfdxCommand, FlagsConfig, flags } from '@salesforce/command';
 import { Messages, SfdxError} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
 import * as fs from 'fs-extra';
@@ -15,12 +15,19 @@ export default class ExportConfig extends SfdxCommand {
         `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com`
     ];
 
-    public static args = [{ name: 'file' }];
-
     protected static requiresUsername = true;
     protected static supportsDevhubUsername = true;
     protected static requiresProject = false;
     protected static defaultExportDirectory = '/export/';
+
+
+    protected static flagsConfig: FlagsConfig = {
+        file: flags.filepath({
+            char: 'f',
+            description: 'Export file path',
+            required: false
+        })
+    };
 
     public async run(): Promise<AnyJson> {
 
@@ -38,8 +45,8 @@ export default class ExportConfig extends SfdxCommand {
         const ux = this.ux;
         let filePath = '';
 
-        if (this.args.file) {
-            filePath = this.args.file;
+        if (this.flags.file) {
+            filePath = this.flags.file;
         } else {
             filePath = __dirname + ExportConfig.defaultExportDirectory + (new Date().toISOString() + '.json');
         }
