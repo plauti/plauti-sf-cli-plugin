@@ -28,7 +28,7 @@ export default class RefreshLicense extends SfdxCommand {
             headers: {
                 Authorization: `Bearer ${conn.accessToken}`
             },
-            url: `${conn.instanceUrl}/services/apexresdt/dupcheck/dc3Api/admin/refresh-license`,
+            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/refresh-license`,
             method: 'post',
         };
 

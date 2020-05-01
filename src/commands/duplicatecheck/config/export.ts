@@ -38,7 +38,7 @@ export default class ExportConfig extends SfdxCommand {
             headers: {
                 Authorization: `Bearer ${conn.accessToken}`
             },
-            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/search`,
+            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/export-config`,
             method: 'post',
             body: JSON.stringify(searchInput)
         };
@@ -65,7 +65,10 @@ export default class ExportConfig extends SfdxCommand {
                 }
             });
 
-        await fs.writeFile(`${filePath}`, exportContent);
+        await fs.writeFile(`${filePath}`, exportContent, {
+            encoding: "utf-8",
+            flag: "w"
+        });
         ux.log('File: ' + filePath);
 
         return {
