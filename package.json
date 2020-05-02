@@ -1,7 +1,7 @@
 {
   "name": "plauti-sfdx",
   "description": "Plauti SFDX Plugin",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Tom Safari",
   "bugs": "https://github.com/plauti/plauti-sfdx/issues",
   "dependencies": {
