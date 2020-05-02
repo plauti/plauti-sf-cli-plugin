@@ -18,6 +18,12 @@ export default class ImportConfig extends SfdxCommand {
             char: 'f',
             description: 'File path',
             required: true
+        }),
+        pollinterval: flags.integer({
+            char: 'p',
+            description: 'Poll interval in seconds',
+            required: false,
+            default : 3
         })
     };
 
@@ -58,13 +64,14 @@ export default class ImportConfig extends SfdxCommand {
         let jobId = null;
         await conn.requestRaw(submitRequest)
             .then(function (response) {
-                // console.log(response.body);
                 if (response.statusCode != 200){
+                    console.log(response.body);
                     ux.stopSpinner('Failed!');
                     throw new SfdxError('Failed to import configuration file. ' + response.statusCode);
                 } else {
                     let body = JSON.parse(response.body.toString());
                     jobId = body.jobId;
+                    ux.log('Job Id: ' + jobId);
                 }
             });
 
@@ -79,38 +86,42 @@ export default class ImportConfig extends SfdxCommand {
                 "Content-Type" : "application/json; charset=utf-8",
                 'Cache-Control': 'no-cache'
             },
-            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/import-config-job-stats`,
+            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/import-config-job-stat`,
             method: 'post',
             body: jobId
         };
 
         let jobDone = false;
+        let warnins = null;
 
         while (!jobDone) {
-            await sleep(3000);
-            console.log('Sleep');
+            await sleep(this.flags.pollinterval * 1000);
             await conn.requestRaw(pollRequest)
                 .then(function (response) {
-                    // console.log(response.body);
+                    console.log(response.body);
                     if (response.statusCode != 200){
                         ux.stopSpinner('Failed!');
                         throw new SfdxError('Failed to import configuration file. ' + response.statusCode);
                     } else {
                         let body = JSON.parse(response.body.toString());
 
-                        switch (body.Status) {
+                        switch (body.jobInfo.Status) {
                             case 'Completed':
-                                ux.stopSpinner('Done!');
                                 jobDone = true;
+                                warnins = body.warnings;
+                                ux.stopSpinner('Done!');
+                                if (body.warnings){
+                                    ux.logJson(warnins);
+                                }
                                 break;
                             case 'Failed':
                                 ux.stopSpinner('Failed!');
                                 jobDone = true;
-                                throw new SfdxError('Failed to import configuration file: ' + body.ExtendedStatus);
+                                throw new SfdxError('Failed to import configuration file: ' + body.info.ExtendedStatus);
                             case 'Aborted':
                                 ux.stopSpinner('Failed!');
                                 jobDone = true;
-                                throw new SfdxError('Failed to import configuration file: ' + body.ExtendedStatus);
+                                throw new SfdxError('Failed to import configuration file: ' + body.info.ExtendedStatus);
                             default:
                                 break;
                         }
@@ -119,14 +130,15 @@ export default class ImportConfig extends SfdxCommand {
         }
 
         return {
-            ok: 'true'
+            ok: 'true',
+            warnings : warnins
         };
 
         function sleep(ms: number) {
             return new Promise((resolve) => {
               setTimeout(resolve, ms);
             });
-          }   
+        }
     }
     
 }
