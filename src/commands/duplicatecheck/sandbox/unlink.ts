@@ -7,14 +7,13 @@ Messages.importMessagesDirectory(__dirname);
 export default class LinkSandbox extends SfdxCommand {
 
     public static description = 'Unlink Sandbox from Production';
+    protected static requiresUsername = true;
+    protected static supportsDevhubUsername = true;
+    protected static requiresProject = false;
 
     public static examples = [
         `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --orgid 00DR0000001ossaMAA`
     ];
-
-    protected static requiresUsername = true;
-    protected static supportsDevhubUsername = true;
-    protected static requiresProject = false;
 
     protected static flagsConfig: FlagsConfig = {
         organizationid: flags.string({

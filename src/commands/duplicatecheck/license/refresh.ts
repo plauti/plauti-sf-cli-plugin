@@ -6,15 +6,14 @@ Messages.importMessagesDirectory(__dirname);
 
 export default class RefreshLicense extends SfdxCommand {
 
-    public static description = 'Refresh license'
+    public static description = 'Refresh license';
+    protected static requiresUsername = true;
+    protected static supportsDevhubUsername = true;
+    protected static requiresProject = false;
 
     public static examples = [
         `$ sfdx plauti:duplicatecheck:license:refresh --targetusername myOrg@example.com`
     ];
-
-    protected static requiresUsername = true;
-    protected static supportsDevhubUsername = true;
-    protected static requiresProject = false;
 
     public async run(): Promise<AnyJson> {
 
