@@ -12,6 +12,9 @@ export default class ImportConfig extends SfdxCommand {
     protected static supportsDevhubUsername = true;
     protected static requiresProject = false;
 
+    private static IMPORT_CONFIG_JOB_SUBMIT = 'services/apexrest/dupcheck/dc3Api/admin/import-config';
+    private static IMPORT_CONFIG_JOB_STAT_PATH = 'services/apexrest/dupcheck/dc3Api/admin/import-config-job-stat';
+
     public static examples = [
         `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com`
     ];
@@ -77,7 +80,7 @@ export default class ImportConfig extends SfdxCommand {
                     "Content-Type": "application/json; charset=utf-8",
                     'Cache-Control': 'no-cache'
                 },
-                url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/import-config-job-stat`,
+                url: `${conn.instanceUrl}/${ImportConfig.IMPORT_CONFIG_JOB_STAT_PATH}`,
                 method: 'post',
                 body: jobId
             };
@@ -115,7 +118,7 @@ export default class ImportConfig extends SfdxCommand {
                     "Content-Type": "application/json; charset=utf-8",
                     'Cache-Control': 'no-cache'
                 },
-                url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/import-config`,
+                url: `${conn.instanceUrl}/${ImportConfig.IMPORT_CONFIG_JOB_SUBMIT}`,
                 method: 'post',
                 body: fileContent
             };

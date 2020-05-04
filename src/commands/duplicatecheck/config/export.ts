@@ -13,6 +13,10 @@ export default class ExportConfig extends SfdxCommand {
     protected static requiresProject = false;
     protected static defaultExportDirectory = '/export/';
 
+    private static EXPORT_CONFIG_JOB_SUBMIT = 'services/apexrest/dupcheck/dc3Api/admin/export-config';
+    private static EXPORT_CONFIG_JOB_STAT_PATH = 'services/apexrest/dupcheck/dc3Api/admin/export-config-job-stat';
+    private static EXPORT_CONFIG_DOWNLOAD = 'services/apexrest/dupcheck/dc3Api/admin/export-config-download';
+
     public static examples = [
         `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com`
     ];
@@ -84,7 +88,7 @@ export default class ExportConfig extends SfdxCommand {
                 headers: {
                     Authorization: `Bearer ${conn.accessToken}`
                 },
-                url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/export-config`,
+                url: `${conn.instanceUrl}/${ExportConfig.EXPORT_CONFIG_JOB_SUBMIT}`,
                 method: 'post'
             };
 
@@ -112,7 +116,7 @@ export default class ExportConfig extends SfdxCommand {
                     "Content-Type": "application/json; charset=utf-8",
                     'Cache-Control': 'no-cache'
                 },
-                url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/export-config-job-stat`,
+                url: `${conn.instanceUrl}/${ExportConfig.EXPORT_CONFIG_JOB_STAT_PATH}`,
                 method: 'post',
                 body: jobId
             };
@@ -147,7 +151,7 @@ export default class ExportConfig extends SfdxCommand {
                 headers: {
                     Authorization: `Bearer ${conn.accessToken}`
                 },
-                url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/export-config-download`,
+                url: `${conn.instanceUrl}/${ExportConfig.EXPORT_CONFIG_DOWNLOAD}`,
                 method: 'post',
                 body: jobId
             };
