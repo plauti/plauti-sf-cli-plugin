@@ -33,24 +33,20 @@ export default class LinkSandbox extends SfdxCommand {
             },
             url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/link-sandbox-license`,
             method: 'post',
-            body : JSON.stringify(
-                {
+            body : JSON.stringify({
                     organizationId : this.flags.organizationid
                 }
             )
         };
 
-        const ux = this.ux;
         this.ux.startSpinner(`Unlinking sandbox`);
-        await conn.requestRaw(defaultRequest)
-            .then(function (response) {
-                if (response.statusCode != 200){
-                    ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to unlink sanbox. ' + response.statusCode);
-                } else {
-                    ux.stopSpinner('Done!');
-                }
-            });
+        const response = await conn.requestRaw(defaultRequest)
+        if (response.statusCode != 200){
+            this.ux.stopSpinner('Failed!');
+            throw new SfdxError('Failed to unlink sanbox. ' + response.statusCode);
+        } else {
+            this.ux.stopSpinner('Done!');
+        }
 
         return {
             status: 'done'

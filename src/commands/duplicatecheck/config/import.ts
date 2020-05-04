@@ -32,26 +32,23 @@ export default class ImportConfig extends SfdxCommand {
 
     public async run(): Promise<AnyJson> {
 
+        this.ux.startSpinner(`Importing configuration file`);
         const conn = this.org.getConnection();
-        const ux = this.ux;
-        conn.cache.clear();
 
         let filePath = this.flags.file;
         let stats = fs.statSync(filePath);
 
         if (!stats.isFile) {
-            throw new SfdxError('File not found: ' + filePath);
+            throwError('File not found: ' + filePath);
         } else if (stats.isDirectory()) {
-            throw new SfdxError('Can not import directory: ' + filePath);
+            throwError('Can not import directory: ' + filePath);
         }
 
-        this.ux.startSpinner(`Importing configuration file`);
-
         let jobId = await uploadFile();
-        ux.log('Job Id: ' + jobId);
+        this.ux.log('Job Id: ' + jobId);
 
         if (jobId == null) {
-            throw new SfdxError('Failed to upload file, not job id.');
+            throwError('Failed to upload file, not job id.');
         }
 
         let pollDone = await pollJob();
@@ -87,26 +84,22 @@ export default class ImportConfig extends SfdxCommand {
 
             const response = await conn.requestRaw(request);
             if (response.statusCode != 200) {
-                ux.stopSpinner('Failed!');
-                throw new SfdxError('Failed to import configuration file. ' + response.statusCode);
+                throwError(response.statusCode + '');
             } else {
                 let body = JSON.parse(response.body.toString());
 
                 if (!body.ok){
-                    ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to import configuration file. ' + body.errorMessage);
+                    throwError(body.errorMessage);
                 }
 
                 switch (body.jobInfo.Status) {
                     case 'Completed':
-                        ux.stopSpinner('Done!');
+                        this.ux.stopSpinner('Done!');
                         return true;
                     case 'Failed':
-                        ux.stopSpinner('Failed!');
-                        throw new SfdxError('Failed to import configuration file: ' + body.info.ExtendedStatus);
+                        throwError(body.jobInfo.ExtendedStatus);
                     case 'Aborted':
-                        ux.stopSpinner('Failed!');
-                        throw new SfdxError('Failed to import configuration file: ' + body.info.ExtendedStatus);
+                        throwError(body.jobInfo.ExtendedStatus);
                     default:
                         break;
                 }
@@ -130,16 +123,19 @@ export default class ImportConfig extends SfdxCommand {
             const response = await conn.requestRaw(request);
             if (response.statusCode != 200) {
                 console.log(response.body);
-                ux.stopSpinner('Failed!');
-                throw new SfdxError('Failed to import configuration file. ' + response.statusCode);
+                throwError(response.statusCode +'');
             } else {
                 let body = JSON.parse(response.body.toString());
                 if (!body.ok){
-                    ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to import configuration file. ' + body.errorMessage);
+                    throwError(body.errorMessage);
                 }
                 return body.jobId;
             }
+        }
+
+        function throwError(message : string){
+            this.ux.stopSpinner('Failed!');
+            throw new SfdxError('Failed to import configuration file. ' + ((message) ? message : ''));
         }
     }
 

@@ -27,17 +27,14 @@ export default class RefreshLicense extends SfdxCommand {
             method: 'post',
         };
 
-        const ux = this.ux;
         this.ux.startSpinner(`Refreshing license`);
-        await conn.requestRaw(defaultRequest)
-            .then(function (response) {
-                if (response.statusCode != 200){
-                    ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to refresh license. ' + response.statusCode);
-                } else {
-                    ux.stopSpinner('Done!');
-                }
-            });
+        const response = await conn.requestRaw(defaultRequest)
+        if (response.statusCode != 200){
+            this.ux.stopSpinner('Failed!');
+            throw new SfdxError('Failed to refresh license. ' + response.statusCode);
+        } else {
+            this.ux.stopSpinner('Done!');
+        }
 
         return {
             status: 'done'

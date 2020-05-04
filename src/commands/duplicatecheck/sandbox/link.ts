@@ -47,16 +47,14 @@ export default class LinkSandbox extends SfdxCommand {
         };
 
         const ux = this.ux;
-        this.ux.startSpinner(`Linking sandbox`);
-        await conn.requestRaw(defaultRequest)
-            .then(function (response) {
-                if (response.statusCode != 200){
-                    ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to link sanbox. ' + response.statusCode);
-                } else {
-                    ux.stopSpinner('Done!');
-                }
-            });
+        this.ux.startSpinner('Linking sandbox');
+        const response = await conn.requestRaw(defaultRequest)
+        if (response.statusCode != 200){
+            ux.stopSpinner('Failed!');
+            throw new SfdxError('Failed to link sanbox. ' + response.statusCode);
+        } else {
+            ux.stopSpinner('Done!');
+        }
 
         return {
             status: 'done',

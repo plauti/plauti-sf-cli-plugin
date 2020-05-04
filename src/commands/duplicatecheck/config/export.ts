@@ -34,8 +34,8 @@ export default class ExportConfig extends SfdxCommand {
     public async run(): Promise<AnyJson> {
 
         const conn = this.org.getConnection();
+        this.ux.startSpinner(`Downloading export file`);
 
-        const ux = this.ux;
         let filePath = '';
 
         if (this.flags.file) {
@@ -44,13 +44,12 @@ export default class ExportConfig extends SfdxCommand {
             filePath = __dirname + ExportConfig.defaultExportDirectory + (new Date().toISOString() + '.json');
         }
 
-        ux.startSpinner(`Downloading export file`);
 
         let jobId = await submitJob();
-        ux.log('Job id: ' + jobId);
+        this.ux.log('Job id: ' + jobId);
 
         if (jobId == null) {
-            throw new SfdxError('Failed to upload file, not job id.');
+            throwError('Failed to upload file, not job id.');
         }
 
         let pollDone = await pollJob();
@@ -61,13 +60,13 @@ export default class ExportConfig extends SfdxCommand {
         }
 
         let fileContent = await downloadFile();
-        ux.stopSpinner('Done!');
+        this.ux.stopSpinner('Done!');
 
         await fs.writeFile(`${filePath}`, fileContent, {
             encoding: "utf-8",
             flag: "w"
         });
-        ux.log('File: ' + filePath);
+        this.ux.log('File: ' + filePath);
 
         return {
             path: filePath
@@ -91,15 +90,14 @@ export default class ExportConfig extends SfdxCommand {
 
             const response = await conn.requestRaw(request);
             if (response.statusCode != 200) {
-                ux.stopSpinner('Failed!');
-                throw new SfdxError('Failed to export configuration file. ' + response.statusCode);
+                throwError(response.statusCode +'');
+                
             }
             else {
                 let body = JSON.parse(response.body.toString());
 
                 if (!body.ok){
-                    ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to export configuration file. ' + body.errorMessage);
+                    throwError(body.errorMessage);
                 }
 
                 return body.jobId;
@@ -121,25 +119,22 @@ export default class ExportConfig extends SfdxCommand {
 
             const response = await conn.requestRaw(request);
             if (response.statusCode != 200) {
-                ux.stopSpinner('Failed!');
-                throw new SfdxError('Failed to export configuration file. ' + response.statusCode);
+                console.log(response.body);
+                throwError(response.statusCode +'');
             } else {
                 let body = JSON.parse(response.body.toString());
 
                 if (!body.ok){
-                    ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to export configuration file. ' + body.errorMessage);
+                    throwError(body.errorMessage);
                 }
 
                 switch (body.jobInfo.Status) {
                     case 'Completed':
                         return true;
                     case 'Failed':
-                        ux.stopSpinner('Failed!');
-                        throw new SfdxError('Failed to export configuration file: ' + body.info.ExtendedStatus);
+                        throwError(body.jobInfo.ExtendedStatus);
                     case 'Aborted':
-                        ux.stopSpinner('Failed!');
-                        throw new SfdxError('Failed to export configuration file: ' + body.info.ExtendedStatus);
+                        throwError(body.jobInfo.ExtendedStatus);
                     default:
                         break;
                 }
@@ -159,12 +154,16 @@ export default class ExportConfig extends SfdxCommand {
 
             const response = await conn.requestRaw(downloadRequest)
             if (response.statusCode != 200) {
-                ux.stopSpinner('Failed!');
-                throw new SfdxError('Failed to download export file. ' + response.statusCode);
+                throwError(response.statusCode +'');
             } else {
                 return response.body.toString();
             }
 
+        }
+
+        function throwError(message : string){
+            this.ux.stopSpinner('Failed!');
+            throw new SfdxError('Failed to export configuration file. ' + ((message) ? message : ''));
         }
     }
 

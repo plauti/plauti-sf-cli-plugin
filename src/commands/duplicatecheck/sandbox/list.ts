@@ -27,20 +27,19 @@ export default class ListSandbox extends SfdxCommand {
             method: 'post',
         };
 
-        const ux = this.ux;
         this.ux.startSpinner(`Getting linked sandboxes`);
         let content = null;
-        await conn.requestRaw(defaultRequest)
-            .then(function (response) {
-                if (response.statusCode != 200){
-                    ux.stopSpinner('Failed!');
-                    throw new SfdxError('Failed to get linked sandboxes. ' + response.statusCode);
-                } else {
-                    content = response.body;
-                    console.log(content);
-                    ux.stopSpinner('Done!');
-                }
-            });
+
+        const response = await conn.requestRaw(defaultRequest)
+        if (response.statusCode != 200){
+            console.log(response.body);
+            this.ux.stopSpinner('Failed!');
+            throw new SfdxError('Failed to get linked sandboxes. ' + response.statusCode);
+        } else {
+            content = response.body;
+            this.ux.log(content);
+            this.ux.stopSpinner('Done!');
+        }
 
         return {
             status: 'done',
