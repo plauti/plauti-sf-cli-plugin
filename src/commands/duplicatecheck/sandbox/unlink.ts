@@ -17,7 +17,6 @@ export default class LinkSandbox extends SfdxCommand {
 
     protected static flagsConfig: FlagsConfig = {
         organizationid: flags.string({
-            char: 'o',
             description: 'Production org id',
             required: true
         })

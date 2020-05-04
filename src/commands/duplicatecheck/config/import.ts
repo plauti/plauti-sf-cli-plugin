@@ -21,12 +21,10 @@ export default class ImportConfig extends SfdxCommand {
 
     protected static flagsConfig: FlagsConfig = {
         file: flags.filepath({
-            char: 'f',
             description: 'File path',
             required: true
         }),
         pollinterval: flags.integer({
-            char: 'p',
             description: 'Poll interval in seconds',
             required: false,
             default: 3
