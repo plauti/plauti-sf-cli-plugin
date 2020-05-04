@@ -37,6 +37,7 @@ export default class ImportConfig extends SfdxCommand {
 
         this.ux.startSpinner(`Importing configuration file`);
         const conn = this.org.getConnection();
+        const ux = this.ux;
 
         let filePath = this.flags.file;
         let stats = fs.statSync(filePath);
@@ -97,7 +98,7 @@ export default class ImportConfig extends SfdxCommand {
 
                 switch (body.jobInfo.Status) {
                     case 'Completed':
-                        this.ux.stopSpinner('Done!');
+                        ux.stopSpinner('Done!');
                         return true;
                     case 'Failed':
                         throwError(body.jobInfo.ExtendedStatus);
@@ -137,7 +138,7 @@ export default class ImportConfig extends SfdxCommand {
         }
 
         function throwError(message : string){
-            this.ux.stopSpinner('Failed!');
+            ux.stopSpinner('Failed!');
             throw new SfdxError('Failed to import configuration file. ' + ((message) ? message : ''));
         }
     }

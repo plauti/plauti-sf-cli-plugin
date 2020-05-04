@@ -25,7 +25,7 @@ export default class ExportConfig extends SfdxCommand {
         file: flags.filepath({
             char: 'f',
             description: 'Export file path',
-            required: false
+            required: true
         }),
         pollinterval: flags.integer({
             char: 'p',
@@ -38,6 +38,7 @@ export default class ExportConfig extends SfdxCommand {
     public async run(): Promise<AnyJson> {
 
         const conn = this.org.getConnection();
+        const ux = this.ux;
         this.ux.startSpinner(`Downloading export file`);
 
         let filePath = '';
@@ -47,7 +48,6 @@ export default class ExportConfig extends SfdxCommand {
         } else {
             filePath = __dirname + ExportConfig.defaultExportDirectory + (new Date().toISOString() + '.json');
         }
-
 
         let jobId = await submitJob();
         this.ux.log('Job id: ' + jobId);
@@ -94,8 +94,8 @@ export default class ExportConfig extends SfdxCommand {
 
             const response = await conn.requestRaw(request);
             if (response.statusCode != 200) {
+                console.log(response.body);
                 throwError(response.statusCode +'');
-                
             }
             else {
                 let body = JSON.parse(response.body.toString());
@@ -166,7 +166,7 @@ export default class ExportConfig extends SfdxCommand {
         }
 
         function throwError(message : string){
-            this.ux.stopSpinner('Failed!');
+            ux.stopSpinner('Failed!');
             throw new SfdxError('Failed to export configuration file. ' + ((message) ? message : ''));
         }
     }
