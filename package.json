@@ -46,9 +46,6 @@
     "commands": "./lib/commands",
     "bin": "sfdx",
     "topics": {
-      "hello": {
-        "description": "Commands to say hello."
-      }
     },
     "devPlugins": [
       "@oclif/plugin-help"
