@@ -8,7 +8,7 @@ export default class LinkSandbox extends SfdxCommand {
 
     public static description = 'Unlink Sandbox from Production';
     protected static requiresUsername = true;
-    protected static supportsDevhubUsername = true;
+    protected static supportsDevhubUsername = false;
     protected static requiresProject = false;
 
     public static examples = [

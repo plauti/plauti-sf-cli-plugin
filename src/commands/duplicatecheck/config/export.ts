@@ -9,7 +9,7 @@ export default class ExportConfig extends SfdxCommand {
 
     public static description = 'Export Plauti Duplicate Check configuration';
     protected static requiresUsername = true;
-    protected static supportsDevhubUsername = true;
+    protected static supportsDevhubUsername = false;
     protected static requiresProject = false;
     protected static defaultExportDirectory = '/export/';
 

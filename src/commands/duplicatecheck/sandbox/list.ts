@@ -8,7 +8,7 @@ export default class ListSandbox extends SfdxCommand {
 
     public static description = 'List all sandbox orgs';
     protected static requiresUsername = true;
-    protected static supportsDevhubUsername = true;
+    protected static supportsDevhubUsername = false;
     protected static requiresProject = false;
 
     public static examples = [

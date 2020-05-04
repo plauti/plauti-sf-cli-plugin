@@ -9,7 +9,7 @@ export default class ImportConfig extends SfdxCommand {
 
     public static description = 'Import Plauti Duplicate Check configuration';
     protected static requiresUsername = true;
-    protected static supportsDevhubUsername = true;
+    protected static supportsDevhubUsername = false;
     protected static requiresProject = false;
 
     private static IMPORT_CONFIG_JOB_SUBMIT = 'services/apexrest/dupcheck/dc3Api/admin/import-config';
