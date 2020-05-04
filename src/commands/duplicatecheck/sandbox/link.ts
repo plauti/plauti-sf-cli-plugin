@@ -59,7 +59,7 @@ export default class LinkSandbox extends SfdxCommand {
             });
 
         return {
-            status: 'done'
+            status: 'done',
         };
     }
 }

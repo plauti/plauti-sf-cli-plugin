@@ -96,6 +96,12 @@ export default class ExportConfig extends SfdxCommand {
             }
             else {
                 let body = JSON.parse(response.body.toString());
+
+                if (!body.ok){
+                    ux.stopSpinner('Failed!');
+                    throw new SfdxError('Failed to export configuration file. ' + body.errorMessage);
+                }
+
                 return body.jobId;
             }
         }
@@ -120,9 +126,13 @@ export default class ExportConfig extends SfdxCommand {
             } else {
                 let body = JSON.parse(response.body.toString());
 
+                if (!body.ok){
+                    ux.stopSpinner('Failed!');
+                    throw new SfdxError('Failed to export configuration file. ' + body.errorMessage);
+                }
+
                 switch (body.jobInfo.Status) {
                     case 'Completed':
-                        ux.stopSpinner('Done!');
                         return true;
                     case 'Failed':
                         ux.stopSpinner('Failed!');

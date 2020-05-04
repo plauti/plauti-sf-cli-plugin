@@ -92,6 +92,11 @@ export default class ImportConfig extends SfdxCommand {
             } else {
                 let body = JSON.parse(response.body.toString());
 
+                if (!body.ok){
+                    ux.stopSpinner('Failed!');
+                    throw new SfdxError('Failed to import configuration file. ' + body.errorMessage);
+                }
+
                 switch (body.jobInfo.Status) {
                     case 'Completed':
                         ux.stopSpinner('Done!');
@@ -129,6 +134,10 @@ export default class ImportConfig extends SfdxCommand {
                 throw new SfdxError('Failed to import configuration file. ' + response.statusCode);
             } else {
                 let body = JSON.parse(response.body.toString());
+                if (!body.ok){
+                    ux.stopSpinner('Failed!');
+                    throw new SfdxError('Failed to import configuration file. ' + body.errorMessage);
+                }
                 return body.jobId;
             }
         }
