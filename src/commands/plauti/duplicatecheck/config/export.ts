@@ -1,5 +1,5 @@
 import { SfdxCommand, FlagsConfig, flags } from '@salesforce/command';
-import { Messages, SfdxError } from '@salesforce/core';
+import { Messages, SfdxError} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
 import * as fs from 'fs-extra';
 
@@ -18,12 +18,13 @@ export default class ExportConfig extends SfdxCommand {
     private static EXPORT_CONFIG_DOWNLOAD = 'services/apexrest/dupcheck/dc3Api/admin/export-config-download';
 
     public static examples = [
-        `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com`
+        `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json`,
+        `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json --pollinterval 10`
     ];
 
     protected static flagsConfig: FlagsConfig = {
         file: flags.filepath({
-            description: 'Export file path',
+            description: 'Export file path and name',
             required: true
         }),
         pollinterval: flags.integer({

@@ -16,7 +16,8 @@ export default class ImportConfig extends SfdxCommand {
     private static IMPORT_CONFIG_JOB_STAT_PATH = 'services/apexrest/dupcheck/dc3Api/admin/import-config-job-stat';
 
     public static examples = [
-        `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com`
+        `$ sfdx plauti:duplicatecheck:config:import --targetusername myOrg@example.com --file ./export/test_config.json`,
+        `$ sfdx plauti:duplicatecheck:config:import --targetusername myOrg@example.com --file ./export/test_config.json --pollinterval 10`
     ];
 
     protected static flagsConfig: FlagsConfig = {
