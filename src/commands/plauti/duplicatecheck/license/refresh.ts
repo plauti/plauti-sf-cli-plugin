@@ -25,7 +25,7 @@ export default class RefreshLicense extends SfdxCommand {
             response = await conn.apex.post('/dupcheck/dc3Api/admin/refresh-license',{});
         } catch (e) {
             this.ux.stopSpinner('Failed!');
-            throw new SfdxError('Failed to refresh license. ' + e);
+            throw new SfdxError('Failed to refresh Duplicate Check for Salesforce license. ' + e);
 
         }     
         

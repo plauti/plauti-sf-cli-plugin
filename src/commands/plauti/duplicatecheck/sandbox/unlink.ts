@@ -12,12 +12,12 @@ export default class LinkSandbox extends SfdxCommand {
     protected static requiresProject = false;
 
     public static examples = [
-        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --orgid 00DR0000001ossaMAA`
+        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA`
     ];
 
     protected static flagsConfig: FlagsConfig = {
         organizationid: flags.string({
-            description: 'Production org id',
+            description: 'Sandbox Organization Id',
             required: true
         })
     };
@@ -30,7 +30,7 @@ export default class LinkSandbox extends SfdxCommand {
             headers: {
                 Authorization: `Bearer ${conn.accessToken}`
             },
-            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/link-sandbox-license`,
+            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/unlink-sandbox-license`,
             method: 'post',
             body : JSON.stringify({
                     organizationId : this.flags.organizationid

@@ -17,11 +17,11 @@ export default class LinkSandbox extends SfdxCommand {
 
     protected static flagsConfig: FlagsConfig = {
         organizationid: flags.string({
-            description: 'Production organization id',
+            description: 'Sandbox Organization Id',
             required: true
         }),
         sandboxname: flags.string({
-            description: 'Sandbox name',
+            description: 'Sandbox Name',
             required: true
         })
     };
