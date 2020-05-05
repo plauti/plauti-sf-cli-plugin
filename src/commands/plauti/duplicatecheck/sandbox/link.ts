@@ -33,8 +33,6 @@ export default class LinkSandbox extends SfdxCommand {
 
     public async run(): Promise<AnyJson> {
 
-        const ux = this.ux;
-
         if (!this.flags.organizationid && !this.flags.sandboxusername) {
             throw new SfdxError('Parameter organizationid or sandboxusername is required.');
         }
@@ -47,18 +45,17 @@ export default class LinkSandbox extends SfdxCommand {
         } 
 
         this.ux.startSpinner('Linking sandbox');
-        var response;
         try {
-            response = await conn.apex.post('/dupcheck/dc3Api/admin/link-sandbox-license',{
+            await conn.apex.post('/dupcheck/dc3Api/admin/link-sandbox-license',{
                 organizationId : sandboxOrgId,
                 sandboxName : this.flags.sandboxname
             });
+            this.ux.stopSpinner('Done!');
         } catch (e) {
             this.ux.stopSpinner('Failed!');
             throw new SfdxError('Failed to link sandbox. ' + e);
 
         }
-        ux.stopSpinner('Done!');
         return {
             status: 'done',
         };

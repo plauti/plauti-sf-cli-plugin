@@ -41,18 +41,16 @@ export default class LinkSandbox extends SfdxCommand {
         } 
 
         this.ux.startSpinner(`Unlinking sandbox`);
-        var response;
         try {
-            response = await conn.apex.post('/dupcheck/dc3Api/admin/unlink-sandbox-license',{
+            await conn.apex.post('/dupcheck/dc3Api/admin/unlink-sandbox-license',{
                 organizationId : sandboxOrgId
             });
+            this.ux.stopSpinner('Done!');
         } catch (e) {
             this.ux.stopSpinner('Failed!');
             throw new SfdxError('Failed to unlink sandbox. ' + e);
-
         }
 
-        this.ux.stopSpinner('Done!');
         return {
             status: 'done'
         };
