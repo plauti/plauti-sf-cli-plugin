@@ -18,27 +18,16 @@ export default class ListSandbox extends SfdxCommand {
     public async run(): Promise<AnyJson> {
 
         const conn = this.org.getConnection();
-        const defaultRequest = {
-            json: true,
-            headers: {
-                Authorization: `Bearer ${conn.accessToken}`
-            },
-            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/get-linked-sandboxes`,
-            method: 'post',
-        };
-
         this.ux.startSpinner(`Getting linked sandboxes`);
         let content = null;
 
-        const response = await conn.requestRaw(defaultRequest)
-        if (response.statusCode != 200){
-            console.log(response.body);
-            this.ux.stopSpinner('Failed!');
-            throw new SfdxError('Failed to get linked sandboxes. ' + response.statusCode);
-        } else {
-            content = response.body;
+        try {
+            content = await conn.apex.post('/dupcheck/dc3Api/admin/get-linked-sandboxes',{});
             this.ux.log(content);
             this.ux.stopSpinner('Done!');
+        } catch (e) {
+            this.ux.stopSpinner('Failed!');
+            throw new SfdxError('Failed to get linked sandboxes. ' + e);
         }
 
         return {
