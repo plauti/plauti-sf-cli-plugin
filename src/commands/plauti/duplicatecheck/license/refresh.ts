@@ -6,7 +6,7 @@ Messages.importMessagesDirectory(__dirname);
 
 export default class RefreshLicense extends SfdxCommand {
 
-    public static description = 'Refresh license';
+    public static description = 'Refresh Duplicate Check for Salesforce license';
     protected static requiresUsername = true;
     protected static supportsDevhubUsername = false;
     protected static requiresProject = false;
@@ -18,24 +18,19 @@ export default class RefreshLicense extends SfdxCommand {
     public async run(): Promise<AnyJson> {
 
         const conn = this.org.getConnection();
-        const defaultRequest = {
-            json: true,
-            headers: {
-                Authorization: `Bearer ${conn.accessToken}`
-            },
-            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/refresh-license`,
-            method: 'post',
-        };
-
-        this.ux.startSpinner(`Refreshing license`);
-        const response = await conn.requestRaw(defaultRequest)
-        if (response.statusCode != 200){
+        
+        this.ux.startSpinner(`Refreshing Duplicate Check for Salesforce license`);
+        var response;
+        try {
+            response = await conn.apex.post('/dupcheck/dc3Api/admin/refresh-license',{});
+        } catch (e) {
             this.ux.stopSpinner('Failed!');
-            throw new SfdxError('Failed to refresh license. ' + response.statusCode);
-        } else {
-            this.ux.stopSpinner('Done!');
-        }
+            throw new SfdxError('Failed to refresh license. ' + e);
 
+        }     
+        
+        this.ux.stopSpinner('Done!');
+        
         return {
             status: 'done'
         };
