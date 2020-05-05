@@ -33,9 +33,9 @@ USAGE
 * [`sfdx plauti:duplicatecheck:config:export --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatecheckconfigexport---file-filepath---pollinterval-integer--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:config:import --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatecheckconfigimport---file-filepath---pollinterval-integer--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:license:refresh [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecklicenserefresh--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx plauti:duplicatecheck:sandbox:link --organizationid <string> --sandboxname <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxlink---organizationid-string---sandboxname-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx plauti:duplicatecheck:sandbox:link --sandboxname <string> [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxlink---sandboxname-string---organizationid-string---sandboxusername-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:sandbox:list [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxlist--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx plauti:duplicatecheck:sandbox:unlink --organizationid <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxunlink---organizationid-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx plauti:duplicatecheck:sandbox:unlink [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxunlink---organizationid-string---sandboxusername-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
 ## `sfdx plauti:duplicatecheck:config:export --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -53,7 +53,7 @@ OPTIONS
   --apiversion=apiversion                                                           override the api version used for
                                                                                     api requests made by this command
 
-  --file=file                                                                       (required) Export file path
+  --file=file                                                                       (required) Export file path and name
 
   --json                                                                            format output as json
 
@@ -63,8 +63,10 @@ OPTIONS
   --pollinterval=pollinterval                                                       [default: 3] Poll interval in
                                                                                     seconds
 
-EXAMPLE
-  $ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com
+EXAMPLES
+  $ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json
+  $ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json 
+  --pollinterval 10
 ```
 
 ## `sfdx plauti:duplicatecheck:config:import --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
@@ -93,13 +95,15 @@ OPTIONS
   --pollinterval=pollinterval                                                       [default: 3] Poll interval in
                                                                                     seconds
 
-EXAMPLE
-  $ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com
+EXAMPLES
+  $ sfdx plauti:duplicatecheck:config:import --targetusername myOrg@example.com --file ./export/test_config.json
+  $ sfdx plauti:duplicatecheck:config:import --targetusername myOrg@example.com --file ./export/test_config.json 
+  --pollinterval 10
 ```
 
 ## `sfdx plauti:duplicatecheck:license:refresh [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
-Refresh license
+Refresh Duplicate Check for Salesforce license
 
 ```
 USAGE
@@ -122,14 +126,15 @@ EXAMPLE
   $ sfdx plauti:duplicatecheck:license:refresh --targetusername myOrg@example.com
 ```
 
-## `sfdx plauti:duplicatecheck:sandbox:link --organizationid <string> --sandboxname <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sfdx plauti:duplicatecheck:sandbox:link --sandboxname <string> [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Link Sandbox to Production
 
 ```
 USAGE
-  $ sfdx plauti:duplicatecheck:sandbox:link --organizationid <string> --sandboxname <string> [-u <string>] [--apiversion 
-  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx plauti:duplicatecheck:sandbox:link --sandboxname <string> [--organizationid <string>] [--sandboxusername 
+  <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
   -u, --targetusername=targetusername                                               username or alias for the target
@@ -143,13 +148,16 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
                                                                                     this command invocation
 
-  --organizationid=organizationid                                                   (required) Production organization
-                                                                                    id
+  --organizationid=organizationid                                                   Sandbox Organization Id
 
-  --sandboxname=sandboxname                                                         (required) Sandbox name
+  --sandboxname=sandboxname                                                         (required) Sandbox Name
 
-EXAMPLE
+  --sandboxusername=sandboxusername                                                 Sandbox User Name
+
+EXAMPLES
   $ sfdx plauti:duplicatecheck:sandbox:link --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA 
+  --sandboxname mysandbox
+  $ sfdx plauti:duplicatecheck:sandbox:link --targetusername myOrg@example.com --sandboxusername scratch_org_1 
   --sandboxname mysandbox
 ```
 
@@ -178,14 +186,14 @@ EXAMPLE
   $ sfdx plauti:duplicatecheck:sandbox:list --targetusername myOrg@example.com
 ```
 
-## `sfdx plauti:duplicatecheck:sandbox:unlink --organizationid <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sfdx plauti:duplicatecheck:sandbox:unlink [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Unlink Sandbox from Production
 
 ```
 USAGE
-  $ sfdx plauti:duplicatecheck:sandbox:unlink --organizationid <string> [-u <string>] [--apiversion <string>] [--json] 
-  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx plauti:duplicatecheck:sandbox:unlink [--organizationid <string>] [--sandboxusername <string>] [-u <string>] 
+  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
   -u, --targetusername=targetusername                                               username or alias for the target
@@ -199,10 +207,13 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
                                                                                     this command invocation
 
-  --organizationid=organizationid                                                   (required) Production org id
+  --organizationid=organizationid                                                   Sandbox Organization Id
 
-EXAMPLE
-  $ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --orgid 00DR0000001ossaMAA
+  --sandboxusername=sandboxusername                                                 Sandbox User Name
+
+EXAMPLES
+  $ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA
+  $ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --sandboxusername scratch_org_1
 ```
 <!-- commandsstop -->
 <!-- debugging-your-plugin -->
