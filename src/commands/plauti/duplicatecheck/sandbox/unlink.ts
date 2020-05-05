@@ -1,5 +1,5 @@
 import { SfdxCommand, FlagsConfig, flags} from '@salesforce/command';
-import { Messages, SfdxError} from '@salesforce/core';
+import { Messages, SfdxError, Org} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
 
 Messages.importMessagesDirectory(__dirname);
@@ -12,41 +12,47 @@ export default class LinkSandbox extends SfdxCommand {
     protected static requiresProject = false;
 
     public static examples = [
-        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA`
+        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA`,
+        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --sandboxusername scratch_org_1`
     ];
 
     protected static flagsConfig: FlagsConfig = {
         organizationid: flags.string({
             description: 'Sandbox Organization Id',
-            required: true
-        })
+            required: false
+        }),
+        sandboxusername: flags.string({
+            description: 'Sandbox User Name',
+            required: false
+        }),
     };
 
     public async run(): Promise<AnyJson> {
 
-        const conn = this.org.getConnection();
-        const defaultRequest = {
-            json: true,
-            headers: {
-                Authorization: `Bearer ${conn.accessToken}`
-            },
-            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/unlink-sandbox-license`,
-            method: 'post',
-            body : JSON.stringify({
-                    organizationId : this.flags.organizationid
-                }
-            )
-        };
-
-        this.ux.startSpinner(`Unlinking sandbox`);
-        const response = await conn.requestRaw(defaultRequest)
-        if (response.statusCode != 200){
-            this.ux.stopSpinner('Failed!');
-            throw new SfdxError('Failed to unlink sanbox. ' + response.statusCode);
-        } else {
-            this.ux.stopSpinner('Done!');
+        if (!this.flags.organizationid && !this.flags.sandboxusername) {
+            throw new SfdxError('Parameter organizationid or sandboxusername is required.');
         }
 
+        const conn = this.org.getConnection();
+        var sandboxOrgId = this.flags.organizationid
+        if (!sandboxOrgId) {
+            const sandboxOrg = await Org.create({aliasOrUsername: this.flags.sandboxusername});
+            sandboxOrgId = sandboxOrg.getOrgId();
+        } 
+
+        this.ux.startSpinner(`Unlinking sandbox`);
+        var response;
+        try {
+            response = await conn.apex.post('/dupcheck/dc3Api/admin/unlink-sandbox-license',{
+                organizationId : sandboxOrgId
+            });
+        } catch (e) {
+            this.ux.stopSpinner('Failed!');
+            throw new SfdxError('Failed to unlink sandbox. ' + e);
+
+        }
+
+        this.ux.stopSpinner('Done!');
         return {
             status: 'done'
         };

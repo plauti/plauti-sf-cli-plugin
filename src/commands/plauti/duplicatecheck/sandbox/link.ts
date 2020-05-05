@@ -1,5 +1,5 @@
 import { SfdxCommand, FlagsConfig, flags} from '@salesforce/command';
-import { Messages, SfdxError} from '@salesforce/core';
+import { Messages, SfdxError, Org} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
 
 Messages.importMessagesDirectory(__dirname);
@@ -12,13 +12,18 @@ export default class LinkSandbox extends SfdxCommand {
     protected static requiresProject = false;
 
     public static examples = [
-        `$ sfdx plauti:duplicatecheck:sandbox:link --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA --sandboxname mysandbox`
+        `$ sfdx plauti:duplicatecheck:sandbox:link --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA --sandboxname mysandbox`,
+        `$ sfdx plauti:duplicatecheck:sandbox:link --targetusername myOrg@example.com --sandboxusername scratch_org_1 --sandboxname mysandbox`
     ];
 
     protected static flagsConfig: FlagsConfig = {
         organizationid: flags.string({
             description: 'Sandbox Organization Id',
-            required: true
+            required: false
+        }),
+        sandboxusername: flags.string({
+            description: 'Sandbox User Name',
+            required: false
         }),
         sandboxname: flags.string({
             description: 'Sandbox Name',
@@ -28,32 +33,32 @@ export default class LinkSandbox extends SfdxCommand {
 
     public async run(): Promise<AnyJson> {
 
-        const conn = this.org.getConnection();
-        const defaultRequest = {
-            json: true,
-            headers: {
-                Authorization: `Bearer ${conn.accessToken}`
-            },
-            url: `${conn.instanceUrl}/services/apexrest/dupcheck/dc3Api/admin/link-sandbox-license`,
-            method: 'post',
-            body : JSON.stringify(
-                {
-                    organizationId : this.flags.organizationid,
-                    sandboxName : this.flags.sandboxname
-                }
-            )
-        };
-
         const ux = this.ux;
-        this.ux.startSpinner('Linking sandbox');
-        const response = await conn.requestRaw(defaultRequest)
-        if (response.statusCode != 200){
-            ux.stopSpinner('Failed!');
-            throw new SfdxError('Failed to link sanbox. ' + response.statusCode);
-        } else {
-            ux.stopSpinner('Done!');
+
+        if (!this.flags.organizationid && !this.flags.sandboxusername) {
+            throw new SfdxError('Parameter organizationid or sandboxusername is required.');
         }
 
+        const conn = this.org.getConnection();
+        var sandboxOrgId = this.flags.organizationid
+        if (!sandboxOrgId) {
+            const sandboxOrg = await Org.create({aliasOrUsername: this.flags.sandboxusername});
+            sandboxOrgId = sandboxOrg.getOrgId();
+        } 
+
+        this.ux.startSpinner('Linking sandbox');
+        var response;
+        try {
+            response = await conn.apex.post('/dupcheck/dc3Api/admin/link-sandbox-license',{
+                organizationId : sandboxOrgId,
+                sandboxName : this.flags.sandboxname
+            });
+        } catch (e) {
+            this.ux.stopSpinner('Failed!');
+            throw new SfdxError('Failed to link sandbox. ' + e);
+
+        }
+        ux.stopSpinner('Done!');
         return {
             status: 'done',
         };
