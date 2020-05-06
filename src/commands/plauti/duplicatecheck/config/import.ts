@@ -5,6 +5,24 @@ import * as fs from 'fs-extra';
 
 Messages.importMessagesDirectory(__dirname);
 
+export interface SubmitJobResponse {
+    ok?: boolean;
+    jobId?: object;
+    errorMessage : string
+}
+
+export interface PollJobResponse {
+    ok?: boolean;
+    errorMessage : string
+    jobInfo?: JobInfo;
+}
+
+export interface JobInfo {
+    Status?: string;
+    ExtendedStatus : string
+    jobInfo?: AnyJson;
+}
+
 export default class ImportConfig extends SfdxCommand {
 
     public static description = 'Import Plauti Duplicate Check configuration';
@@ -13,7 +31,7 @@ export default class ImportConfig extends SfdxCommand {
     protected static requiresProject = false;
 
     private static IMPORT_CONFIG_JOB_SUBMIT = 'services/apexrest/dupcheck/dc3Api/admin/import-config';
-    private static IMPORT_CONFIG_JOB_STAT_PATH = 'services/apexrest/dupcheck/dc3Api/admin/import-config-job-stat';
+    private static IMPORT_CONFIG_JOB_STAT_PATH = '/dupcheck/dc3Api/admin/import-config-job-stat';
 
     public static examples = [
         `$ sfdx plauti:duplicatecheck:config:import --targetusername myOrg@example.com --file ./export/test_config.json`,
@@ -73,31 +91,19 @@ export default class ImportConfig extends SfdxCommand {
         }
 
         async function pollJob() {
-            const request = {
-                json: true,
-                headers: {
-                    Authorization: `Bearer ${conn.accessToken}`,
-                    "Content-Type": "application/json; charset=utf-8",
-                    'Cache-Control': 'no-cache'
-                },
-                url: `${conn.instanceUrl}/${ImportConfig.IMPORT_CONFIG_JOB_STAT_PATH}`,
-                method: 'post',
-                body: jobId
-            };
 
-            const response = await conn.requestRaw(request);
-            if (response.statusCode != 200) {
-                throwError(response.statusCode + '');
-            } else {
-                let body = JSON.parse(response.body.toString());
-
+            try {
+                const input = {
+                    jobId : jobId
+                }
+                const body : PollJobResponse = await conn.apex.post(ImportConfig.IMPORT_CONFIG_JOB_STAT_PATH,input);
+                console.log(body);
                 if (!body.ok){
                     throwError(body.errorMessage);
                 }
-
+                
                 switch (body.jobInfo.Status) {
                     case 'Completed':
-                        ux.stopSpinner('Done!');
                         return true;
                     case 'Failed':
                         throwError(body.jobInfo.ExtendedStatus);
@@ -106,7 +112,11 @@ export default class ImportConfig extends SfdxCommand {
                     default:
                         break;
                 }
+
+            } catch (e) {
+                throwError(e);
             }
+
         }
 
         async function uploadFile() {
