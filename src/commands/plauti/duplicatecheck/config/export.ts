@@ -5,6 +5,24 @@ import * as fs from 'fs-extra';
 
 Messages.importMessagesDirectory(__dirname);
 
+export interface SubmitJobResponse {
+    ok?: boolean;
+    jobId?: object;
+    errorMessage : string
+}
+
+export interface PollJobResponse {
+    ok?: boolean;
+    errorMessage : string
+    jobInfo?: JobInfo;
+}
+
+export interface JobInfo {
+    Status?: string;
+    ExtendedStatus : string
+    jobInfo?: AnyJson;
+}
+
 export default class ExportConfig extends SfdxCommand {
 
     public static description = 'Export Plauti Duplicate Check configuration';
@@ -13,9 +31,9 @@ export default class ExportConfig extends SfdxCommand {
     protected static requiresProject = false;
     protected static defaultExportDirectory = '/export/';
 
-    private static EXPORT_CONFIG_JOB_SUBMIT = 'services/apexrest/dupcheck/dc3Api/admin/export-config';
-    private static EXPORT_CONFIG_JOB_STAT_PATH = 'services/apexrest/dupcheck/dc3Api/admin/export-config-job-stat';
-    private static EXPORT_CONFIG_DOWNLOAD = 'services/apexrest/dupcheck/dc3Api/admin/export-config-download';
+    private static EXPORT_CONFIG_JOB_SUBMIT = '/dupcheck/dc3Api/admin/export-config';
+    private static EXPORT_CONFIG_JOB_STAT_PATH = '/dupcheck/dc3Api/admin/export-config-job-stat';
+    private static EXPORT_CONFIG_DOWNLOAD = '/dupcheck/dc3Api/admin/export-config-download';
 
     public static examples = [
         `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json`,
@@ -82,55 +100,30 @@ export default class ExportConfig extends SfdxCommand {
         }
 
         async function submitJob() {
-            const request = {
-                json: true,
-                headers: {
-                    Authorization: `Bearer ${conn.accessToken}`
-                },
-                url: `${conn.instanceUrl}/${ExportConfig.EXPORT_CONFIG_JOB_SUBMIT}`,
-                method: 'post'
-            };
-
-            const response = await conn.requestRaw(request);
-            if (response.statusCode != 200) {
-                console.log(response.body);
-                throwError(response.statusCode +'');
-            }
-            else {
-                let body = JSON.parse(response.body.toString());
-
+            try {
+                const body : SubmitJobResponse = await conn.apex.post(ExportConfig.EXPORT_CONFIG_JOB_SUBMIT,{});
+                
                 if (!body.ok){
                     throwError(body.errorMessage);
                 }
-
                 return body.jobId;
+            } catch (e) {
+                throwError(e);
             }
         }
 
         async function pollJob() {
-            const request = {
-                json: true,
-                headers: {
-                    Authorization: `Bearer ${conn.accessToken}`,
-                    "Content-Type": "application/json; charset=utf-8",
-                    'Cache-Control': 'no-cache'
-                },
-                url: `${conn.instanceUrl}/${ExportConfig.EXPORT_CONFIG_JOB_STAT_PATH}`,
-                method: 'post',
-                body: jobId
-            };
 
-            const response = await conn.requestRaw(request);
-            if (response.statusCode != 200) {
-                console.log(response.body);
-                throwError(response.statusCode +'');
-            } else {
-                let body = JSON.parse(response.body.toString());
-
+            try {
+                const input = {
+                    jobId : jobId
+                }
+                const body : PollJobResponse = await conn.apex.post(ExportConfig.EXPORT_CONFIG_JOB_STAT_PATH,input);
+                
                 if (!body.ok){
                     throwError(body.errorMessage);
                 }
-
+                
                 switch (body.jobInfo.Status) {
                     case 'Completed':
                         return true;
@@ -141,27 +134,19 @@ export default class ExportConfig extends SfdxCommand {
                     default:
                         break;
                 }
+
+            } catch (e) {
+                throwError(e);
             }
+
         }
 
         async function downloadFile() {
-            const downloadRequest = {
-                json: true,
-                headers: {
-                    Authorization: `Bearer ${conn.accessToken}`
-                },
-                url: `${conn.instanceUrl}/${ExportConfig.EXPORT_CONFIG_DOWNLOAD}`,
-                method: 'post',
-                body: jobId
-            };
-
-            const response = await conn.requestRaw(downloadRequest)
-            if (response.statusCode != 200) {
-                throwError(response.statusCode +'');
-            } else {
-                return response.body.toString();
+            const input = {
+                jobId : jobId
             }
-
+            const body = await conn.apex.post(ExportConfig.EXPORT_CONFIG_DOWNLOAD,input);
+            return body;
         }
 
         function throwError(message : string){

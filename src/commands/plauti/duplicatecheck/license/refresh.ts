@@ -26,7 +26,7 @@ export default class RefreshLicense extends SfdxCommand {
         } catch (e) {
             this.ux.stopSpinner('Failed!');
             throw new SfdxError('Failed to refresh Duplicate Check for Salesforce license. ' + e);
-        }     
+        }
         
         return {
             status: 'done'
