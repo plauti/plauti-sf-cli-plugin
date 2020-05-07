@@ -23,7 +23,7 @@ export default class ListSandbox extends SfdxCommand {
 
         try {
             content = await conn.apex.post('/dupcheck/dc3Api/admin/get-linked-sandboxes',{});
-            this.ux.log(content);
+            this.ux.logJson(content);
             this.ux.stopSpinner('Done!');
         } catch (e) {
             this.ux.stopSpinner('Failed!');
