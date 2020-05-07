@@ -97,7 +97,6 @@ export default class ImportConfig extends SfdxCommand {
                     jobId : jobId
                 }
                 const body : PollJobResponse = await conn.apex.post(ImportConfig.IMPORT_CONFIG_JOB_STAT_PATH,input);
-                console.log(body);
                 if (!body.ok){
                     throwError(body.errorMessage);
                 }
