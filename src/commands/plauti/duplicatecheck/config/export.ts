@@ -76,7 +76,7 @@ export default class ExportConfig extends SfdxCommand {
         let pollDone = await pollJob();
 
         while (!pollDone) {
-            sleep(this.flags.pollinterval);
+            await sleep(this.flags.pollinterval);
             pollDone = await pollJob();
         }
 
@@ -93,7 +93,7 @@ export default class ExportConfig extends SfdxCommand {
             path: filePath
         };
 
-        function sleep(ms: number) {
+        async function sleep(ms: number) {
             return new Promise((resolve) => {
                 setTimeout(resolve, ms);
             });

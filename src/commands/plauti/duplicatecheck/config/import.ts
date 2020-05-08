@@ -75,7 +75,7 @@ export default class ImportConfig extends SfdxCommand {
         let pollDone = await pollJob();
 
         while (!pollDone) {
-            sleep(this.flags.pollinterval);
+            await sleep(this.flags.pollinterval);
             pollDone = await pollJob();
         }
 
@@ -84,7 +84,7 @@ export default class ImportConfig extends SfdxCommand {
             warnings: null
         };
 
-        function sleep(ms: number) {
+        async function sleep(ms: number) {
             return new Promise((resolve) => {
                 setTimeout(resolve, ms);
             });
