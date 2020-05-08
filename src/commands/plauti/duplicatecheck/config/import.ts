@@ -13,8 +13,9 @@ export interface SubmitJobResponse {
 
 export interface PollJobResponse {
     ok?: boolean;
-    errorMessage : string
+    errorMessage : string;
     jobInfo?: JobInfo;
+    warnings? : AnyJson;
 }
 
 export interface JobInfo {
@@ -72,16 +73,16 @@ export default class ImportConfig extends SfdxCommand {
             throwError('Failed to upload file, not job id.');
         }
 
-        let pollDone = await pollJob();
+        let pollResponse : PollJobResponse = await pollJob();
 
-        while (!pollDone) {
+        while (!pollResponse) {
             await sleep(this.flags.pollinterval);
-            pollDone = await pollJob();
+            pollResponse = await pollJob();
         }
 
         return {
             ok: 'true',
-            warnings: null
+            warnings: pollResponse.warnings
         };
 
         async function sleep(ms: number) {
@@ -103,7 +104,7 @@ export default class ImportConfig extends SfdxCommand {
                 
                 switch (body.jobInfo.Status) {
                     case 'Completed':
-                        return true;
+                        return body;
                     case 'Failed':
                         throwError(body.jobInfo.ExtendedStatus);
                     case 'Aborted':
@@ -111,6 +112,8 @@ export default class ImportConfig extends SfdxCommand {
                     default:
                         break;
                 }
+
+                return null;
 
             } catch (e) {
                 throwError(e);
