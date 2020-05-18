@@ -69,6 +69,8 @@ EXAMPLES
   --pollinterval 10
 ```
 
+_See code: [lib/commands/plauti/duplicatecheck/config/export.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/config/export.js)_
+
 ## `sfdx plauti:duplicatecheck:config:import --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Import Plauti Duplicate Check configuration
@@ -101,6 +103,8 @@ EXAMPLES
   --pollinterval 10
 ```
 
+_See code: [lib/commands/plauti/duplicatecheck/config/import.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/config/import.js)_
+
 ## `sfdx plauti:duplicatecheck:license:refresh [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Refresh Duplicate Check for Salesforce license
@@ -125,6 +129,8 @@ OPTIONS
 EXAMPLE
   $ sfdx plauti:duplicatecheck:license:refresh --targetusername myOrg@example.com
 ```
+
+_See code: [lib/commands/plauti/duplicatecheck/license/refresh.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/license/refresh.js)_
 
 ## `sfdx plauti:duplicatecheck:sandbox:link --sandboxname <string> [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -161,6 +167,8 @@ EXAMPLES
   --sandboxname mysandbox
 ```
 
+_See code: [lib/commands/plauti/duplicatecheck/sandbox/link.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/sandbox/link.js)_
+
 ## `sfdx plauti:duplicatecheck:sandbox:list [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 List all sandbox orgs
@@ -185,6 +193,8 @@ OPTIONS
 EXAMPLE
   $ sfdx plauti:duplicatecheck:sandbox:list --targetusername myOrg@example.com
 ```
+
+_See code: [lib/commands/plauti/duplicatecheck/sandbox/list.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/sandbox/list.js)_
 
 ## `sfdx plauti:duplicatecheck:sandbox:unlink [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -215,6 +225,8 @@ EXAMPLES
   $ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA
   $ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --sandboxusername scratch_org_1
 ```
+
+_See code: [lib/commands/plauti/duplicatecheck/sandbox/unlink.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/sandbox/unlink.js)_
 <!-- commandsstop -->
 <!-- debugging-your-plugin -->
 # Debugging your plugin
