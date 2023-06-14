@@ -40,7 +40,7 @@ export class DcGroup {
   public getGroupId() {
     return this.groupId;
   }
-  
+
   public getMatchedRecords() {
     return this.matchedRecords;
   }
@@ -115,7 +115,7 @@ public async run(): Promise<AnyJson> {
         masterGroupMap.set(nextGroupNumber, sourceId);
       }
 
-      groupMap.get(sourceId).addMatchedRecord(matchId);  
+      groupMap.get(sourceId).addMatchedRecord(matchId);
     }).on('end', async () => {
       this.ux.cli.info(`Done reading csv. Parsed ${groupMap.size} groups.`);
 
@@ -144,12 +144,12 @@ public async run(): Promise<AnyJson> {
       } catch (e) {
         throw new SfdxError(`Could not insert job into Salesforce: ${e}`);
       }
-      
+
       let largestGroupSize :number = 0;
       const groupList :Array<object> = [];
 
       for (const [_, group] of groupMap) {
-        this.ux.cli.info(`Processing Group: ${JSON.stringify(group)}`);  
+        this.ux.cli.info(`Processing Group: ${JSON.stringify(group)}`);
         const dcGroupSobject :any = {
           'dupcheck__dcJob__c': dcJob['id'],
           'dupcheck__group__c': group.getGroupNumber()
@@ -199,7 +199,7 @@ public async run(): Promise<AnyJson> {
             'dupcheck__SourceObject__c': group.getMasterId(),
             'dupcheck__Score__c': 100,
           })
-        } 
+        }
       }
 
       this.ux.cli.info(`Inserting Duplicate Check Pairs into Salesforce.`);
@@ -225,7 +225,7 @@ public async run(): Promise<AnyJson> {
 
       }
 
-      
+
       this.ux.cli.info(`Done.`);
     });
 
