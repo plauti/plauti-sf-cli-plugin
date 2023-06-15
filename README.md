@@ -36,6 +36,7 @@ USAGE
 * [`sfdx plauti:duplicatecheck:sandbox:link --sandboxname <string> [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxlink---sandboxname-string---organizationid-string---sandboxusername-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:sandbox:list [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxlist--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:sandbox:unlink [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxunlink---organizationid-string---sandboxusername-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001 --setmasterformerge`](#sfdx-plautiduplicatecheckcsvtojob---targetusername-myorgexamplecom---file-myfirstjobcsv---sourceobject-001---matchobject-001---setmasterformerge)
 
 ## `sfdx plauti:duplicatecheck:config:export --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -227,4 +228,53 @@ EXAMPLES
 ```
 
 _See code: [lib/commands/plauti/duplicatecheck/sandbox/unlink.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/sandbox/unlink.js)_
+
+## `sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001 --setmasterformerge`
+
+Create a Duplicate Check Job from a csv file of known duplicates.
+The desired file structure is;
+
+```
+Master,ToMerge
+00QAW000005yzc42AA,00QAW000005yziN2AQ
+00QAW000005yzc42AA,00QAW000005z2Wv2AI
+00QAW000005z5pV2AQ,00QAW000005z4752AA
+```
+
+```
+USAGE
+  $ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file myFirstJob.csv --sourceobject 001 --matchobject 001 --setmasterformerge
+
+OPTIONS
+  -u, --targetusername=targetusername                                               username or alias for the target
+                                                                                    org; overrides default target org
+
+  --apiversion=apiversion                                                           override the api version used for
+                                                                                    api requests made by this command
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
+
+  --file=./myFirstJob.csv                                                           The path to the file that contains
+                                                                                    known duplicates, in the format
+                                                                                    specified above.
+
+  --sourceobject=001                                                                SF Prefix of the source object
+  
+  --matchobject=001                                                                 SF Prefix of the match object
+  
+  --setmasterformerge                                                               Optional flag to sets the master 
+                                                                                    record to be the master in the 
+                                                                                    merge, no values are taken from the 
+                                                                                    ToMerge records. Only the related 
+                                                                                    records are reparented. If value is
+                                                                                    false, DC merge rules are applied.
+
+EXAMPLES
+  $ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001 --setmasterformerge
+  $ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001
+```
+
 <!-- commandsstop -->
