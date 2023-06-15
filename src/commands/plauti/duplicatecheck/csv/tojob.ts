@@ -217,7 +217,7 @@ public async run(): Promise<AnyJson> {
             }
           })
         } catch (e) {
-          // fail silently
+          errorCount += currentPairListChunk.length;
         }
         this.ux.cli.info(`Inserted ${successCount} pairs, encountered ${errorCount} errors.`);
         this.ux.cli.info(`Sleeping for 5 seconds.`);
