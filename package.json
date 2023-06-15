@@ -10,6 +10,7 @@
     "@oclif/errors": "^1",
     "@salesforce/command": "^2",
     "@salesforce/core": "^2",
+    "csv": "^6.3.1",
     "tslib": "^1"
   },
   "devDependencies": {
@@ -45,8 +46,7 @@
   "oclif": {
     "commands": "./lib/commands",
     "bin": "sfdx",
-    "topics": {
-    },
+    "topics": {},
     "devPlugins": [
       "@oclif/plugin-help"
     ]
