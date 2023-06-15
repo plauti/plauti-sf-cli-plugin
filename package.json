@@ -1,8 +1,8 @@
 {
   "name": "plauti-sfdx",
   "description": "Plauti SFDX Plugin",
-  "version": "0.0.1",
-  "author": "Tom Safari",
+  "version": "0.0.2",
+  "author": "Plauti BV",
   "bugs": "https://github.com/plauti/plauti-sfdx/issues",
   "dependencies": {
     "@oclif/command": "^1",
