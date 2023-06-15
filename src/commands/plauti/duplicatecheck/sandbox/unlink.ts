@@ -1,7 +1,6 @@
 import { SfdxCommand, FlagsConfig, flags} from '@salesforce/command';
 import { Messages, SfdxError, Org} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
-import axios from 'axios';
 
 Messages.importMessagesDirectory(__dirname);
 
@@ -13,8 +12,8 @@ export default class LinkSandbox extends SfdxCommand {
     protected static requiresProject = false;
 
     public static examples = [
-        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA --plauticloudapikey plauti_123_123456`,
-        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --sandboxusername scratch_org_1 --plauticloudapikey plauti_123_123456`
+        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA`,
+        `$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --sandboxusername scratch_org_1`
     ];
 
     protected static flagsConfig: FlagsConfig = {
@@ -26,10 +25,6 @@ export default class LinkSandbox extends SfdxCommand {
             description: 'Sandbox User Name',
             required: false
         }),
-        plauticloudapikey: flags.string({
-            description: 'Plauti Cloud Api Key',
-            required: true
-        })
     };
 
     public async run(): Promise<AnyJson> {
@@ -38,22 +33,17 @@ export default class LinkSandbox extends SfdxCommand {
             throw new SfdxError('Parameter organizationid or sandboxusername is required.');
         }
 
-        if (!this.flags.plauticloudapikey) {
-          throw new SfdxError('Parameter plauticloudapikey is required.');
-        }
-
-        let sandboxOrgId = this.flags.organizationid
+        const conn = this.org.getConnection();
+        var sandboxOrgId = this.flags.organizationid
         if (!sandboxOrgId) {
             const sandboxOrg = await Org.create({aliasOrUsername: this.flags.sandboxusername});
             sandboxOrgId = sandboxOrg.getOrgId();
-        }
+        } 
 
         this.ux.startSpinner(`Unlinking sandbox`);
         try {
-            await axios.post(`https://cloud.plauti.com/public-api/rest-v1/sandbox-license/${sandboxOrgId}/${this.org.getOrgId()}`, {}, {
-                headers: {
-                  Authorization: this.flags.plauticloudapikey
-                }
+            await conn.apex.post('/dupcheck/dc3Api/admin/unlink-sandbox-license',{
+                organizationId : sandboxOrgId
             });
             this.ux.stopSpinner('Done!');
         } catch (e) {
