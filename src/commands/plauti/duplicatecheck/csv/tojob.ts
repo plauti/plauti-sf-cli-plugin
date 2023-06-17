@@ -1,8 +1,8 @@
 import { flags, FlagsConfig, SfdxCommand } from '@salesforce/command';
 import { Messages, SfError } from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
-import { parse } from 'csv-parse';
 import * as fs from 'fs';
+import * as readline from 'readline';
 
 Messages.importMessagesDirectory(__dirname);
 
@@ -75,15 +75,26 @@ public async run(): Promise<AnyJson> {
   const masterGroupMap = new Map<number, string>();
 
   this.ux.log('Start reading csv.');
-  fs.createReadStream(this.flags.file, 'utf8')
-    .pipe(parse({ delimiter: this.flags.delimiter, from_line: 2 }))
-    .on('data', row => {
-      if (2 !== row.length) {
+  const fileStream = fs.createReadStream(this.flags.file);
+
+  const linereader = readline.createInterface({
+    input: fileStream,
+    crlfDelay: Infinity
+  });
+
+  linereader.on('line', row => {
+      const rowData: string[] = row.trim().split(this.flags.delimiter);
+
+      if (2 !== rowData.length) {
         throw new SfError('csv file inconsistent: row encountered that does not have 2 columns.');
       }
 
-      const sourceId = row[0];
-      const matchId = row[1];
+      if ('master' === rowData[0].toLowerCase()) {
+        return; // skip header row
+      }
+
+      const sourceId = rowData[0];
+      const matchId = rowData[1];
 
       if (sourceId === matchId) {
         return;
@@ -104,7 +115,7 @@ public async run(): Promise<AnyJson> {
       }
 
       groupMap.get(sourceId).addMatchedRecord(matchId);
-    }).on('end', async () => {
+    }).on('close', async () => {
       this.ux.log(`Done reading csv. Parsed ${groupMap.size} groups.`);
 
       if (0 === groupMap.size) {
