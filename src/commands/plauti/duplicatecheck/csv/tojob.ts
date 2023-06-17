@@ -1,9 +1,8 @@
 import { flags, FlagsConfig, SfdxCommand } from '@salesforce/command';
-import { Messages, SfdxError} from '@salesforce/core';
+import { Messages, SfError } from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
 import { parse } from 'csv-parse';
 import * as fs from 'fs';
-import { SaveResult } from 'jsforce';
 
 Messages.importMessagesDirectory(__dirname);
 
@@ -80,7 +79,7 @@ public async run(): Promise<AnyJson> {
     .pipe(parse({ delimiter: this.flags.delimiter, from_line: 2 }))
     .on('data', row => {
       if (2 !== row.length) {
-        throw new SfdxError('csv file inconsistent: row encountered that does not have 2 columns.');
+        throw new SfError('csv file inconsistent: row encountered that does not have 2 columns.');
       }
 
       const sourceId = row[0];
@@ -91,11 +90,11 @@ public async run(): Promise<AnyJson> {
       }
 
       if (!sourceId.startsWith(this.flags.sourceobject)) {
-        throw new SfdxError('csv file inconsistent: source id does not start with the same prefix as provided sourceobject flag.');
+        throw new SfError('csv file inconsistent: source id does not start with the same prefix as provided sourceobject flag.');
       }
 
       if (!matchId.startsWith(this.flags.matchobject)) {
-        throw new SfdxError('csv file inconsistent: match id does not start with the same prefix as provided matchobject flag.');
+        throw new SfError('csv file inconsistent: match id does not start with the same prefix as provided matchobject flag.');
       }
 
       if (!groupMap.has(sourceId)) {
@@ -132,7 +131,7 @@ public async run(): Promise<AnyJson> {
         dcJob = await sfConnection.sobject('dupcheck__dcJob__c').create(dcJobSobject);
         this.ux.log(`Inserted Duplicate Check Job into Salesforce: ${dcJob['id']}.`);
       } catch (e) {
-        throw new SfdxError(`Could not insert job into Salesforce: ${e}`);
+        throw new SfError(`Could not insert job into Salesforce: ${e}`);
       }
 
       let largestGroupSize: number = 0;
@@ -155,7 +154,7 @@ public async run(): Promise<AnyJson> {
           largestGroupSize = groupSize;
         }
       }
-    this.ux.log('Inserting Duplicate Check Groups into Salesforce.');
+      this.ux.log('Inserting Duplicate Check Groups into Salesforce.');
 
       // chunk grouplist into chunks of 200 groups and push to sf
       const chunkSize = 200;
@@ -169,7 +168,7 @@ public async run(): Promise<AnyJson> {
             groupMap.get(masterId).setGroupId(createdGroups[createdGroupIndex]['id']);
           }
         } catch (e) {
-          throw new SfdxError(`Inserting groups failed: ${e}`);
+          throw new SfError(`Inserting groups failed: ${e}`);
         }
       }
 
@@ -180,7 +179,7 @@ public async run(): Promise<AnyJson> {
       for (const [_, group] of groupMap) {
         for (const matchId of group.getMatchedRecords()) {
           if (!group.getGroupId()) {
-            throw new SfdxError('Encountered a group that did not receive a Salesforce ID');
+            throw new SfError('Encountered a group that did not receive a Salesforce ID');
           }
           dcPairList.push({
             dupcheck__dcJob__c: dcJob['id'],

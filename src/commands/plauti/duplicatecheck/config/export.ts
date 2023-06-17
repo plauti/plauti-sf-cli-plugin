@@ -1,5 +1,5 @@
-import { SfdxCommand, FlagsConfig, flags } from '@salesforce/command';
-import { Messages, SfdxError} from '@salesforce/core';
+import { flags, FlagsConfig, SfdxCommand } from '@salesforce/command';
+import { Messages, SfError } from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
 import * as fs from 'fs-extra';
 
@@ -8,37 +8,33 @@ Messages.importMessagesDirectory(__dirname);
 export interface SubmitJobResponse {
     ok?: boolean;
     jobId?: object;
-    errorMessage : string
+    errorMessage: string;
 }
 
 export interface PollJobResponse {
     ok?: boolean;
-    errorMessage : string
+    errorMessage: string;
     jobInfo?: JobInfo;
 }
 
 export interface JobInfo {
     Status?: string;
-    ExtendedStatus : string
+    ExtendedStatus: string;
     jobInfo?: AnyJson;
 }
 
 export default class ExportConfig extends SfdxCommand {
 
     public static description = 'Export Plauti Duplicate Check configuration';
+
+    public static examples = [
+        '$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json',
+        '$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json --pollinterval 10'
+    ];
     protected static requiresUsername = true;
     protected static supportsDevhubUsername = false;
     protected static requiresProject = false;
     protected static defaultExportDirectory = '/export/';
-
-    private static EXPORT_CONFIG_JOB_SUBMIT = '/dupcheck/dc3Api/admin/export-config';
-    private static EXPORT_CONFIG_JOB_STAT_PATH = '/dupcheck/dc3Api/admin/export-config-job-stat';
-    private static EXPORT_CONFIG_DOWNLOAD = '/dupcheck/dc3Api/admin/export-config-download';
-
-    public static examples = [
-        `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json`,
-        `$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json --pollinterval 10`
-    ];
 
     protected static flagsConfig: FlagsConfig = {
         file: flags.filepath({
@@ -52,11 +48,15 @@ export default class ExportConfig extends SfdxCommand {
         })
     };
 
+    private static EXPORT_CONFIG_JOB_SUBMIT = '/dupcheck/dc3Api/admin/export-config';
+    private static EXPORT_CONFIG_JOB_STAT_PATH = '/dupcheck/dc3Api/admin/export-config-job-stat';
+    private static EXPORT_CONFIG_DOWNLOAD = '/dupcheck/dc3Api/admin/export-config-download';
+
     public async run(): Promise<AnyJson> {
 
         const conn = this.org.getConnection();
         const ux = this.ux;
-        this.ux.startSpinner(`Downloading export file`);
+        this.ux.startSpinner('Downloading export file');
 
         let filePath = '';
 
@@ -66,7 +66,7 @@ export default class ExportConfig extends SfdxCommand {
             filePath = __dirname + ExportConfig.defaultExportDirectory + (new Date().toISOString() + '.json');
         }
 
-        let jobId = await submitJob();
+        const jobId = await submitJob();
         this.ux.log('Job id: ' + jobId);
 
         if (jobId == null) {
@@ -80,12 +80,12 @@ export default class ExportConfig extends SfdxCommand {
             pollDone = await pollJob();
         }
 
-        let fileContent = await downloadFile();
+        const fileContent = await downloadFile();
         this.ux.stopSpinner('Done!');
 
         await fs.writeFile(`${filePath}`, fileContent, {
-            encoding: "utf-8",
-            flag: "w"
+            encoding: 'utf-8',
+            flag: 'w'
         });
         this.ux.log('File: ' + filePath);
 
@@ -94,16 +94,16 @@ export default class ExportConfig extends SfdxCommand {
         };
 
         async function sleep(ms: number) {
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 setTimeout(resolve, ms);
             });
         }
 
         async function submitJob() {
             try {
-                const body : SubmitJobResponse = await conn.apex.post(ExportConfig.EXPORT_CONFIG_JOB_SUBMIT,{});
-                
-                if (!body.ok){
+                const body: SubmitJobResponse = await conn.apex.post(ExportConfig.EXPORT_CONFIG_JOB_SUBMIT, {});
+
+                if (!body.ok) {
                     throwError(body.errorMessage);
                 }
                 return body.jobId;
@@ -116,14 +116,14 @@ export default class ExportConfig extends SfdxCommand {
 
             try {
                 const input = {
-                    jobId : jobId
-                }
-                const body : PollJobResponse = await conn.apex.post(ExportConfig.EXPORT_CONFIG_JOB_STAT_PATH,input);
-                
-                if (!body.ok){
+                    jobId
+                };
+                const body: PollJobResponse = await conn.apex.post(ExportConfig.EXPORT_CONFIG_JOB_STAT_PATH, input);
+
+                if (!body.ok) {
                     throwError(body.errorMessage);
                 }
-                
+
                 switch (body.jobInfo.Status) {
                     case 'Completed':
                         return true;
@@ -143,15 +143,15 @@ export default class ExportConfig extends SfdxCommand {
 
         async function downloadFile() {
             const input = {
-                jobId : jobId
-            }
-            const body = await conn.apex.post(ExportConfig.EXPORT_CONFIG_DOWNLOAD,input);
+                jobId
+            };
+            const body = await conn.apex.post(ExportConfig.EXPORT_CONFIG_DOWNLOAD, input);
             return body;
         }
 
-        function throwError(message : string){
+        function throwError(message: string) {
             ux.stopSpinner('Failed!');
-            throw new SfdxError('Failed to export configuration file. ' + ((message) ? message : ''));
+            throw new SfError('Failed to export configuration file. ' + ((message) ? message : ''));
         }
     }
 
