@@ -1,9 +1,9 @@
 import { flags, FlagsConfig, SfdxCommand } from '@salesforce/command';
 import { Messages, SfdxError} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
-import { RecordResult } from 'jsforce';
-import * as parse from 'csv-parse';
+import { parse } from 'csv-parse';
 import * as fs from 'fs';
+import { SaveResult } from 'jsforce';
 
 Messages.importMessagesDirectory(__dirname);
 
@@ -15,13 +15,13 @@ export class DcGroup {
   private groupNumber: number;
   private matchedRecords: Set<string>;
 
-  constructor(masterId :string, groupNumber :number) {
+  constructor(masterId: string, groupNumber: number) {
     this.masterId = masterId;
     this.matchedRecords = new Set<string>();
     this.groupNumber = groupNumber;
   }
 
-  public addMatchedRecord(matchId :string) {
+  public addMatchedRecord(matchId: string) {
     this.matchedRecords.add(matchId);
   }
 
@@ -29,7 +29,7 @@ export class DcGroup {
     return this.groupNumber;
   }
 
-  public setGroupId(groupIdInSalesforce :string) {
+  public setGroupId(groupIdInSalesforce: string) {
     this.groupId = groupIdInSalesforce;
   }
 
@@ -47,15 +47,7 @@ export class DcGroup {
 
 }
 
-export class DcPair {
-  private sourceId: string;
-  private matchId: string;
-}
-
 export default class CsvTojob extends SfdxCommand {
-
-  private static _groupCounter :number = 0;
-  private static _sfNamespace :string = 'dupcheck'
 
   public static description = 'Create A Plauti Duplicate Check Job based on a CSV File';
 
@@ -75,10 +67,7 @@ protected static flagsConfig: FlagsConfig = {
   delimiter: flags.string({ description: 'Csv Delimiter', default: ','})
 };
 
-private _getNextGroupNumber() : number {
-  CsvTojob._groupCounter ++;
-  return CsvTojob._groupCounter;
-}
+  private static _groupCounter: number = 0;
 
 public async run(): Promise<AnyJson> {
 
@@ -86,10 +75,10 @@ public async run(): Promise<AnyJson> {
   const groupMap = new Map<string, DcGroup>();
   const masterGroupMap = new Map<number, string>();
 
-  this.ux.cli.info(`Start reading csv.`)
+  this.ux.log('Start reading csv.');
   fs.createReadStream(this.flags.file, 'utf8')
     .pipe(parse({ delimiter: this.flags.delimiter, from_line: 2 }))
-    .on("data", row => {
+    .on('data', row => {
       if (2 !== row.length) {
         throw new SfdxError('csv file inconsistent: row encountered that does not have 2 columns.');
       }
@@ -97,7 +86,7 @@ public async run(): Promise<AnyJson> {
       const sourceId = row[0];
       const matchId = row[1];
 
-      if (sourceId == matchId) {
+      if (sourceId === matchId) {
         return;
       }
 
@@ -117,43 +106,44 @@ public async run(): Promise<AnyJson> {
 
       groupMap.get(sourceId).addMatchedRecord(matchId);
     }).on('end', async () => {
-      this.ux.cli.info(`Done reading csv. Parsed ${groupMap.size} groups.`);
+      this.ux.log(`Done reading csv. Parsed ${groupMap.size} groups.`);
 
       if (0 === groupMap.size) {
         return;
       }
 
-      this.ux.cli.info(`Inserting Duplicate Check Job into Salesforce.`);
+      this.ux.log('Inserting Duplicate Check Job into Salesforce.');
 
-      const dcJobSobject :any = {
-        'dupcheck__name__c': `SFDX: Create Job from CSV File: '${this.flags.file}'`,
-        'dupcheck__type__c': 'search',
-        'dupcheck__sourceobject__c': this.flags.sourceobject,
-        'dupcheck__status__c': 'completed',
-        'dupcheck__result__c': 'Manual Duplicate Job inserted via Plauti SFDX Plugin'
-      }
+    // tslint:disable-next-line:no-any
+      const dcJobSobject: any = {
+        dupcheck__name__c: `SFDX: Create Job from CSV File: '${this.flags.file}'`,
+        dupcheck__type__c: 'search',
+        dupcheck__sourceobject__c: this.flags.sourceobject,
+        dupcheck__status__c: 'completed',
+        dupcheck__result__c: 'Manual Duplicate Job inserted via Plauti SFDX Plugin'
+      };
 
       if (this.flags.sourceobject !== this.flags.matchobject) {
         dcJobSobject['dupcheck__matchobject__c'] = this.flags.matchobject;
       }
 
-      let dcJob :object;
+      let dcJob: object;
       try {
         dcJob = await sfConnection.sobject('dupcheck__dcJob__c').create(dcJobSobject);
-        this.ux.cli.info(`Inserted Duplicate Check Job into Salesforce: ${dcJob['id']}.`);
+        this.ux.log(`Inserted Duplicate Check Job into Salesforce: ${dcJob['id']}.`);
       } catch (e) {
         throw new SfdxError(`Could not insert job into Salesforce: ${e}`);
       }
 
-      let largestGroupSize :number = 0;
-      const groupList :Array<object> = [];
+      let largestGroupSize: number = 0;
+      const groupList: object[] = [];
 
       for (const [_, group] of groupMap) {
-        this.ux.cli.info(`Processing Group: ${JSON.stringify(group)}`);
-        const dcGroupSobject :any = {
-          'dupcheck__dcJob__c': dcJob['id'],
-          'dupcheck__group__c': group.getGroupNumber()
-        }
+        this.ux.log(`Processing Group: ${JSON.stringify(group)}`);
+        const dcGroupSobject: object = {
+          dupcheck__dcJob__c: dcJob['id'],
+          dupcheck__group__c: group.getGroupNumber()
+        };
         if (this.flags.setmasterformerge) {
           dcGroupSobject['dupcheck__MasterRecord__c'] = group.getMasterId();
         }
@@ -165,18 +155,18 @@ public async run(): Promise<AnyJson> {
           largestGroupSize = groupSize;
         }
       }
-      this.ux.cli.info(`Inserting Duplicate Check Groups into Salesforce.`);
+    this.ux.log('Inserting Duplicate Check Groups into Salesforce.');
 
       // chunk grouplist into chunks of 200 groups and push to sf
       const chunkSize = 200;
       for (let i = 0; i < groupList.length; i += chunkSize) {
-        const currentGroupListChunk :Array<object> = groupList.slice(i, i+chunkSize);
+        const currentGroupListChunk: object[] = groupList.slice(i, i + chunkSize);
         try {
           const createdGroups = await sfConnection.sobject('dupcheck__dcGroup__c').create(currentGroupListChunk);
-          for(let createdGroupIndex = 0; createdGroupIndex < createdGroups.length; createdGroupIndex++) {
+          for (let createdGroupIndex = 0; createdGroupIndex < createdGroups.length; createdGroupIndex++) {
             const group = currentGroupListChunk[createdGroupIndex];
-            const masterId = masterGroupMap.get(group['dupcheck__group__c'])
-            groupMap.get(masterId).setGroupId(createdGroups[createdGroupIndex]['id'])
+            const masterId = masterGroupMap.get(group['dupcheck__group__c']);
+            groupMap.get(masterId).setGroupId(createdGroups[createdGroupIndex]['id']);
           }
         } catch (e) {
           throw new SfdxError(`Inserting groups failed: ${e}`);
@@ -190,46 +180,50 @@ public async run(): Promise<AnyJson> {
       for (const [_, group] of groupMap) {
         for (const matchId of group.getMatchedRecords()) {
           if (!group.getGroupId()) {
-            throw new SfdxError(`Encountered a group that did not receive a Salesforce ID`);
+            throw new SfdxError('Encountered a group that did not receive a Salesforce ID');
           }
           dcPairList.push({
-            'dupcheck__dcJob__c': dcJob['id'],
-            'dupcheck__dcGroup__c': group.getGroupId(),
-            'dupcheck__MatchObject__c': matchId,
-            'dupcheck__SourceObject__c': group.getMasterId(),
-            'dupcheck__Score__c': 100,
-          })
+            dupcheck__dcJob__c: dcJob['id'],
+            dupcheck__dcGroup__c: group.getGroupId(),
+            dupcheck__MatchObject__c: matchId,
+            dupcheck__SourceObject__c: group.getMasterId(),
+            dupcheck__Score__c: 100
+          });
         }
       }
 
-      this.ux.cli.info(`Inserting Duplicate Check Pairs into Salesforce.`);
+      this.ux.log('Inserting Duplicate Check Pairs into Salesforce.');
 
       // chunk the dc duplicate pairs into chuncks of 200 and push to sf
       for (let i = 0; i < dcPairList.length; i += chunkSize) {
-        const currentPairListChunk :Array<object> = dcPairList.slice(i, i+chunkSize);
+        const currentPairListChunk: object[] = dcPairList.slice(i, i + chunkSize);
         try {
           const createdPairs = await sfConnection.sobject('dupcheck__dc3Duplicate__c').create(currentPairListChunk);
-          createdPairs.forEach((createdPair) => {
+          createdPairs.forEach(createdPair => {
             if (createdPair.success) {
               successCount++;
             } else {
               errorCount ++;
             }
-          })
+          });
         } catch (e) {
           errorCount += currentPairListChunk.length;
         }
-        this.ux.cli.info(`Inserted ${successCount} pairs, encountered ${errorCount} errors.`);
-        this.ux.cli.info(`Sleeping for 5 seconds.`);
+        this.ux.log(`Inserted ${successCount} pairs, encountered ${errorCount} errors.`);
+        this.ux.log('Sleeping for 5 seconds.');
         await delay(5000);
 
       }
 
-
-      this.ux.cli.info(`Done.`);
+      this.ux.log('Done.');
     });
 
   return '{}';
+}
+
+private _getNextGroupNumber(): number {
+  CsvTojob._groupCounter ++;
+  return CsvTojob._groupCounter;
 }
 
 }

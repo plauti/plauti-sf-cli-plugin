@@ -13,7 +13,7 @@ Plauti SFDX Plugin
 [![License](https://img.shields.io/npm/l/plauti-sfdx.svg)](https://github.com/plauti/plauti-sfdx/blob/master/package.json)
 
 <!-- toc -->
-* [Debugging your plugin](#debugging-your-plugin)
+
 <!-- tocstop -->
 <!-- install -->
 <!-- usage -->
@@ -22,7 +22,7 @@ $ npm install -g plauti-sfdx
 $ sfdx COMMAND
 running command...
 $ sfdx (-v|--version|version)
-plauti-sfdx/0.0.1 darwin-x64 node-v10.15.3
+plauti-sfdx/0.0.2 darwin-arm64 node-v16.13.2
 $ sfdx --help [COMMAND]
 USAGE
   $ sfdx COMMAND
@@ -32,11 +32,11 @@ USAGE
 <!-- commands -->
 * [`sfdx plauti:duplicatecheck:config:export --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatecheckconfigexport---file-filepath---pollinterval-integer--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:config:import --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatecheckconfigimport---file-filepath---pollinterval-integer--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx plauti:duplicatecheck:csv:tojob --file <filepath> --sourceobject <string> --matchobject <string> [--setmasterformerge] [--delimiter <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatecheckcsvtojob---file-filepath---sourceobject-string---matchobject-string---setmasterformerge---delimiter-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:license:refresh [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecklicenserefresh--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:sandbox:link --sandboxname <string> [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxlink---sandboxname-string---organizationid-string---sandboxusername-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:sandbox:list [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxlist--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx plauti:duplicatecheck:sandbox:unlink [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-plautiduplicatechecksandboxunlink---organizationid-string---sandboxusername-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001 --setmasterformerge`](#sfdx-plautiduplicatecheckcsvtojob---targetusername-myorgexamplecom---file-myfirstjobcsv---sourceobject-001---matchobject-001---setmasterformerge)
 
 ## `sfdx plauti:duplicatecheck:config:export --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -70,8 +70,6 @@ EXAMPLES
   --pollinterval 10
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/config/export.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/config/export.js)_
-
 ## `sfdx plauti:duplicatecheck:config:import --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Import Plauti Duplicate Check configuration
@@ -104,7 +102,44 @@ EXAMPLES
   --pollinterval 10
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/config/import.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/config/import.js)_
+## `sfdx plauti:duplicatecheck:csv:tojob --file <filepath> --sourceobject <string> --matchobject <string> [--setmasterformerge] [--delimiter <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+
+Create A Plauti Duplicate Check Job based on a CSV File
+
+```
+USAGE
+  $ sfdx plauti:duplicatecheck:csv:tojob --file <filepath> --sourceobject <string> --matchobject <string> 
+  [--setmasterformerge] [--delimiter <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -u, --targetusername=targetusername                                               username or alias for the target
+                                                                                    org; overrides default target org
+
+  --apiversion=apiversion                                                           override the api version used for
+                                                                                    api requests made by this command
+
+  --delimiter=delimiter                                                             [default: ,] Csv Delimiter
+
+  --file=file                                                                       (required) Csv file path
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
+
+  --matchobject=matchobject                                                         (required) Match Object Prefix
+
+  --setmasterformerge                                                               Set Master record for Merge
+
+  --sourceobject=sourceobject                                                       (required) Source Object Prefix
+
+EXAMPLES
+  $ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 
+  --matchobject 001
+  $ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 
+  --matchobject 001 --setmasterformerge
+```
 
 ## `sfdx plauti:duplicatecheck:license:refresh [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -130,8 +165,6 @@ OPTIONS
 EXAMPLE
   $ sfdx plauti:duplicatecheck:license:refresh --targetusername myOrg@example.com
 ```
-
-_See code: [lib/commands/plauti/duplicatecheck/license/refresh.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/license/refresh.js)_
 
 ## `sfdx plauti:duplicatecheck:sandbox:link --sandboxname <string> [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -168,8 +201,6 @@ EXAMPLES
   --sandboxname mysandbox
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/sandbox/link.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/sandbox/link.js)_
-
 ## `sfdx plauti:duplicatecheck:sandbox:list [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 List all sandbox orgs
@@ -194,8 +225,6 @@ OPTIONS
 EXAMPLE
   $ sfdx plauti:duplicatecheck:sandbox:list --targetusername myOrg@example.com
 ```
-
-_See code: [lib/commands/plauti/duplicatecheck/sandbox/list.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/sandbox/list.js)_
 
 ## `sfdx plauti:duplicatecheck:sandbox:unlink [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -226,55 +255,4 @@ EXAMPLES
   $ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA
   $ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --sandboxusername scratch_org_1
 ```
-
-_See code: [lib/commands/plauti/duplicatecheck/sandbox/unlink.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.1/lib/commands/plauti/duplicatecheck/sandbox/unlink.js)_
-
-## `sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001 --setmasterformerge`
-
-Create a Duplicate Check Job from a csv file of known duplicates.
-The desired file structure is;
-
-```
-Master,ToMerge
-00QAW000005yzc42AA,00QAW000005yziN2AQ
-00QAW000005yzc42AA,00QAW000005z2Wv2AI
-00QAW000005z5pV2AQ,00QAW000005z4752AA
-```
-
-```
-USAGE
-  $ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file myFirstJob.csv --sourceobject 001 --matchobject 001 --setmasterformerge
-
-OPTIONS
-  -u, --targetusername=targetusername                                               username or alias for the target
-                                                                                    org; overrides default target org
-
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --file=./myFirstJob.csv                                                           The path to the file that contains
-                                                                                    known duplicates, in the format
-                                                                                    specified above.
-
-  --sourceobject=001                                                                SF Prefix of the source object
-  
-  --matchobject=001                                                                 SF Prefix of the match object
-  
-  --setmasterformerge                                                               Optional flag to sets the master 
-                                                                                    record to be the master in the 
-                                                                                    merge, no values are taken from the 
-                                                                                    ToMerge records. Only the related 
-                                                                                    records are reparented. If value is
-                                                                                    false, DC merge rules are applied.
-
-EXAMPLES
-  $ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001 --setmasterformerge
-  $ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001
-```
-
 <!-- commandsstop -->
