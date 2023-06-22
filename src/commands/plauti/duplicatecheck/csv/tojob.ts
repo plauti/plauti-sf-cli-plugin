@@ -129,14 +129,11 @@ public async run(): Promise<AnyJson> {
         dupcheck__name__c: `SFDX: Create Job from CSV File: '${this.flags.file}'`,
         dupcheck__type__c: 'search',
         dupcheck__sourceobject__c: this.flags.sourceobject,
+        dupcheck__matchobject__c: this.flags.matchobject,
         dupcheck__status__c: 'completed',
         dupcheck__result__c: 'Manual Duplicate Job inserted via Plauti SFDX Plugin'
       };
-
-      if (this.flags.sourceobject !== this.flags.matchobject) {
-        dcJobSobject['dupcheck__matchobject__c'] = this.flags.matchobject;
-      }
-
+      
       let dcJob: object;
       try {
         dcJob = await sfConnection.sobject('dupcheck__dcJob__c').create(dcJobSobject);
