@@ -133,7 +133,7 @@ public async run(): Promise<AnyJson> {
         dupcheck__status__c: 'completed',
         dupcheck__result__c: 'Manual Duplicate Job inserted via Plauti SFDX Plugin'
       };
-      
+
       let dcJob: object;
       try {
         dcJob = await sfConnection.sobject('dupcheck__dcJob__c').create(dcJobSobject);
