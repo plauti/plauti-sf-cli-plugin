@@ -1,5 +1,5 @@
 import {flags, FlagsConfig, SfdxCommand} from '@salesforce/command';
-import { Messages, SfdxError} from '@salesforce/core';
+import { Messages, SfError} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
 import axios from 'axios';
 
@@ -8,13 +8,13 @@ Messages.importMessagesDirectory(__dirname);
 export default class ListSandbox extends SfdxCommand {
 
   public static description = 'List all sandbox orgs';
+
+  public static examples = [
+    '$ sfdx plauti:duplicatecheck:sandbox:list --targetusername myOrg@example.com --plauticloudapikey plauti_123_123456'
+  ];
   protected static requiresUsername = true;
   protected static supportsDevhubUsername = false;
   protected static requiresProject = false;
-
-  public static examples = [
-    `$ sfdx plauti:duplicatecheck:sandbox:list --targetusername myOrg@example.com --plauticloudapikey plauti_123_123456`
-  ];
 
   protected static flagsConfig: FlagsConfig = {
     plauticloudapikey: flags.string({
@@ -25,10 +25,10 @@ export default class ListSandbox extends SfdxCommand {
 
   public async run(): Promise<AnyJson> {
     if (!this.flags.plauticloudapikey) {
-      throw new SfdxError('Parameter plauticloudapikey is required.');
+      throw new SfError('Parameter plauticloudapikey is required.');
     }
 
-    this.ux.startSpinner(`Getting linked sandboxes`);
+    this.ux.startSpinner('Getting linked sandboxes');
     let content = null;
 
     try {
@@ -42,7 +42,7 @@ export default class ListSandbox extends SfdxCommand {
       this.ux.stopSpinner('Done!');
     } catch (e) {
       this.ux.stopSpinner('Failed!');
-      throw new SfdxError('Failed to get linked sandboxes. ' + e);
+      throw new SfError('Failed to get linked sandboxes. ' + e);
     }
 
     return {

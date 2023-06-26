@@ -1,5 +1,5 @@
 import { flags, FlagsConfig, SfdxCommand} from '@salesforce/command';
-import { Messages, Org, SfdxError} from '@salesforce/core';
+import { Messages, Org, SfError} from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
 import axios from 'axios';
 
@@ -35,11 +35,11 @@ export default class LinkSandbox extends SfdxCommand {
   public async run(): Promise<AnyJson> {
 
     if (!this.flags.organizationid && !this.flags.sandboxusername) {
-      throw new SfdxError('Parameter organizationid or sandboxusername is required.');
+      throw new SfError('Parameter organizationid or sandboxusername is required.');
     }
 
     if (!this.flags.plauticloudapikey) {
-      throw new SfdxError('Parameter plauticloudapikey is required.');
+      throw new SfError('Parameter plauticloudapikey is required.');
     }
 
     let sandboxOrgId = this.flags.organizationid;
@@ -58,7 +58,7 @@ export default class LinkSandbox extends SfdxCommand {
       this.ux.stopSpinner('Done!');
     } catch (e) {
       this.ux.stopSpinner('Failed!');
-      throw new SfdxError('Failed to unlink sandbox. ' + e);
+      throw new SfError('Failed to unlink sandbox. ' + e);
     }
 
     return {
