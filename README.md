@@ -22,7 +22,7 @@ $ npm install -g plauti-sfdx
 $ sfdx COMMAND
 running command...
 $ sfdx (-v|--version|version)
-plauti-sfdx/0.0.5 darwin-arm64 node-v18.16.0
+plauti-sfdx/0.0.6 darwin-arm64 node-v18.17.1
 $ sfdx --help [COMMAND]
 USAGE
   $ sfdx COMMAND
@@ -70,7 +70,7 @@ EXAMPLES
   --pollinterval 10
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/config/export.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.5/lib/commands/plauti/duplicatecheck/config/export.js)_
+_See code: [lib/commands/plauti/duplicatecheck/config/export.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.6/lib/commands/plauti/duplicatecheck/config/export.js)_
 
 ## `sfdx plauti:duplicatecheck:config:import --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -104,7 +104,7 @@ EXAMPLES
   --pollinterval 10
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/config/import.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.5/lib/commands/plauti/duplicatecheck/config/import.js)_
+_See code: [lib/commands/plauti/duplicatecheck/config/import.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.6/lib/commands/plauti/duplicatecheck/config/import.js)_
 
 ## `sfdx plauti:duplicatecheck:csv:tojob --file <filepath> --sourceobject <string> --matchobject <string> [--setmasterformerge] [--delimiter <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -145,7 +145,7 @@ EXAMPLES
   --matchobject 001 --setmasterformerge
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/csv/tojob.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.5/lib/commands/plauti/duplicatecheck/csv/tojob.js)_
+_See code: [lib/commands/plauti/duplicatecheck/csv/tojob.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.6/lib/commands/plauti/duplicatecheck/csv/tojob.js)_
 
 ## `sfdx plauti:duplicatecheck:license:refresh [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -172,7 +172,7 @@ EXAMPLE
   $ sfdx plauti:duplicatecheck:license:refresh --targetusername myOrg@example.com
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/license/refresh.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.5/lib/commands/plauti/duplicatecheck/license/refresh.js)_
+_See code: [lib/commands/plauti/duplicatecheck/license/refresh.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.6/lib/commands/plauti/duplicatecheck/license/refresh.js)_
 
 ## `sfdx plauti:duplicatecheck:sandbox:link --sandboxname <string> --plauticloudapikey <string> [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -211,7 +211,7 @@ EXAMPLES
   --sandboxname mysandbox --plauticloudapikey plauti_123_123456
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/sandbox/link.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.5/lib/commands/plauti/duplicatecheck/sandbox/link.js)_
+_See code: [lib/commands/plauti/duplicatecheck/sandbox/link.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.6/lib/commands/plauti/duplicatecheck/sandbox/link.js)_
 
 ## `sfdx plauti:duplicatecheck:sandbox:list --plauticloudapikey <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -240,7 +240,7 @@ EXAMPLE
   $ sfdx plauti:duplicatecheck:sandbox:list --targetusername myOrg@example.com --plauticloudapikey plauti_123_123456
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/sandbox/list.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.5/lib/commands/plauti/duplicatecheck/sandbox/list.js)_
+_See code: [lib/commands/plauti/duplicatecheck/sandbox/list.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.6/lib/commands/plauti/duplicatecheck/sandbox/list.js)_
 
 ## `sfdx plauti:duplicatecheck:sandbox:unlink --plauticloudapikey <string> [--organizationid <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -277,5 +277,5 @@ EXAMPLES
   --plauticloudapikey plauti_123_123456
 ```
 
-_See code: [lib/commands/plauti/duplicatecheck/sandbox/unlink.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.5/lib/commands/plauti/duplicatecheck/sandbox/unlink.js)_
+_See code: [lib/commands/plauti/duplicatecheck/sandbox/unlink.js](https://github.com/plauti/plauti-sfdx/blob/v0.0.6/lib/commands/plauti/duplicatecheck/sandbox/unlink.js)_
 <!-- commandsstop -->
