@@ -130,8 +130,9 @@ public async run(): Promise<AnyJson> {
         dupcheck__type__c: 'search',
         dupcheck__sourceobject__c: this.flags.sourceobject,
         dupcheck__matchobject__c: this.flags.matchobject,
-        dupcheck__status__c: 'completed',
-        dupcheck__result__c: 'Manual Duplicate Job inserted via Plauti SFDX Plugin'
+        dupcheck__status__c: 'Completed',
+        dupcheck__result__c: 'Manual Duplicate Job inserted via Plauti SFDX Plugin',
+        dupcheck__Ended__c: new Date()
       };
 
       let dcJob: object;
