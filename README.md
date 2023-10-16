@@ -1,5 +1,5 @@
 # Plauti Salesforce CLI Plugin
-This is a plugin for the Salesforce it's SF CLI, that extends its functionality to also be able to use it to interact with Plauti products such as Duplicate Check. 
+This is a plugin for Salesforce it's SF CLI, that extends its functionality to also be able to use it to interact with Plauti products such as Duplicate Check. 
 
 ## ⚠️ IMPORTANT: Migrating from SFDX to SF CLI
 - Salesforce has recently deprecated the SFDX Command Line application in favor of the Salesforce CLI. To properly use our command line plugin, please migrate from SFDX to SF CLI, as recommended by Salesforce.
