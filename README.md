@@ -14,7 +14,10 @@ This is a plugin for Salesforce it's SF CLI, that extends its functionality to a
 
 ## Installing Plauti Salesforce CLI Plugin
 - Please make sure your machine complies with the above prequisites before you get started.
-- Type the following command in your terminal `sf plugins install plauti-sfdx` and hit `Enter`.
+- Type the following command in your terminal and hit `Enter`:
+  ```
+  sf plugins install plauti-sfdx
+  ```
 - You'll see a prompt asking you if you want to install a plugin that is not from Salesforce, since this plugin is maintained by Plauti. Please confirm by typing `y` (for Yes) and hit `Enter`. 
 - Wait for the installation to complete.
 
