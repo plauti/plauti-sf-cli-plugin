@@ -1,7 +1,7 @@
 {
-  "name": "plauti-sfdx",
+  "name": "plauti-sf-cli-plugin",
   "version": "0.1.0",
-  "description": "Plauti Duplicate Check CLI Plugin for Salesforce",
+  "description": "Plauti CLI Plugin for Salesforce",
   "author": "Plauti",
   "license": "MIT",
   "type": "module",
@@ -50,10 +50,9 @@
   "keywords": [
     "oclif-plugin",
     "salesforce",
-    "sfdx",
     "sf",
     "plauti",
-    "duplicate-check"
+    "deduplicate"
   ],
   "repository": {
     "type": "git",
@@ -62,7 +61,6 @@
   "oclif": {
     "commands": "./lib/commands",
     "bin": "sf",
-    "additionalBins": ["sfdx"],
     "topicSeparator": ":",
     "devPlugins": [
       "@oclif/plugin-help"

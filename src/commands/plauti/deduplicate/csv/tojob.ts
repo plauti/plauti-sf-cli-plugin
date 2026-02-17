@@ -50,20 +50,17 @@ export class DcGroup {
 }
 
 export default class CsvTojob extends SfCommand<string> {
-  public static readonly summary = 'Create A Plauti Duplicate Check Job based on a CSV File';
+  public static readonly summary = 'Create A Plauti Deduplicate Job based on a CSV File';
   
   public static readonly examples = [
     '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001',
     '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001 --set-master-for-merge',
-    '$ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001'
+    '$ sf plauti:deduplicate:csv:tojob --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001'
   ];
 
   public static readonly flags = {
-    'target-org': Flags.requiredOrg(),
-    // BC: Support legacy flag name
-    'targetusername': Flags.requiredOrg({
-      hidden: true,
-      deprecated: { message: 'Use --target-org instead' }
+    'target-org': Flags.requiredOrg({
+      char: 'o'
     }),
     file: Flags.file({ 
       description: 'Csv file path', 
@@ -95,13 +92,7 @@ export default class CsvTojob extends SfCommand<string> {
   public async run(): Promise<string> {
     const { flags } = await this.parse(CsvTojob);
     
-    // BC: Support legacy targetusername flag
-    let targetOrg = flags['target-org'];
-    if (!targetOrg && flags['targetusername']) {
-      this.warn('--targetusername is deprecated. Use --target-org instead.');
-      targetOrg = flags['targetusername'];
-    }
-    
+    const targetOrg = flags['target-org'];
     const conn = (targetOrg as any).getConnection();
     const groupMap = new Map<string, DcGroup>();
     const masterGroupMap = new Map<number, string>();
@@ -163,12 +154,12 @@ export default class CsvTojob extends SfCommand<string> {
           this.log('Inserting Duplicate Check Job into Salesforce.');
 
           const dcJobSobject: Record<string, unknown> = {
-            dupcheck__name__c: `SFDX: Create Job from CSV File: '${flags.file}'`,
+            dupcheck__name__c: `SF CLI: Create Job from CSV File: '${flags.file}'`,
             dupcheck__type__c: 'search',
             dupcheck__sourceobject__c: flags['source-object'],
             dupcheck__matchobject__c: flags['match-object'],
             dupcheck__status__c: 'Completed',
-            dupcheck__result__c: 'Manual Duplicate Job inserted via Plauti SFDX Plugin',
+            dupcheck__result__c: 'Manual Duplicate Job inserted via Plauti SF CLI Plugin',
             dupcheck__Ended__c: new Date()
           };
 

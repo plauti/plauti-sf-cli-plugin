@@ -29,20 +29,17 @@ export interface JobInfo {
 }
 
 export default class ImportConfig extends SfCommand<{ ok: string; warnings?: unknown }> {
-  public static readonly summary = 'Import Plauti Duplicate Check configuration';
+  public static readonly summary = 'Import Plauti Deduplicate configuration';
   
   public static readonly examples = [
     '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json',
     '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json --poll-interval 10',
-    '$ sfdx plauti:duplicatecheck:config:import --targetusername myOrg@example.com --file ./export/test_config.json'
+    '$ sf plauti:deduplicate:config:import --target-org myOrg@example.com --file ./export/test_config.json'
   ];
 
   public static readonly flags = {
-    'target-org': Flags.requiredOrg(),
-    // BC: Support legacy flag name
-    'targetusername': Flags.requiredOrg({
-      hidden: true,
-      deprecated: { message: 'Use --target-org instead' }
+    'target-org': Flags.requiredOrg({
+      char: 'o'
     }),
     file: Flags.file({
       description: 'File path',
@@ -64,13 +61,7 @@ export default class ImportConfig extends SfCommand<{ ok: string; warnings?: unk
   public async run(): Promise<{ ok: string; warnings?: unknown }> {
     const { flags } = await this.parse(ImportConfig);
     
-    // BC: Support legacy targetusername flag
-    let targetOrg = flags['target-org'];
-    if (!targetOrg && flags['targetusername']) {
-      this.warn('--targetusername is deprecated. Use --target-org instead.');
-      targetOrg = flags['targetusername'];
-    }
-    
+    const targetOrg = flags['target-org'];
     const conn = (targetOrg as any).getConnection();
     const filePath = flags.file as string;
 

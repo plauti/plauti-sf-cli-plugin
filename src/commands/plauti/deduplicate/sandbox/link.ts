@@ -14,15 +14,12 @@ export default class LinkSandbox extends SfCommand<{ status: string }> {
   public static readonly examples = [
     '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456',
     '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --sandbox-username scratch_org_1 --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456',
-    '$ sfdx plauti:duplicatecheck:sandbox:link --targetusername myOrg@example.com --organization-id 00DR0000001ossaMAA --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456'
+    '$ sf plauti:deduplicate:sandbox:link --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456'
   ];
 
   public static readonly flags = {
-    'target-org': Flags.requiredOrg(),
-    // BC: Support legacy flag name
-    'targetusername': Flags.requiredOrg({
-      hidden: true,
-      deprecated: { message: 'Use --target-org instead' }
+    'target-org': Flags.requiredOrg({
+      char: 'o'
     }),
     'organization-id': Flags.string({
       description: 'Sandbox Organization Id',
@@ -47,12 +44,7 @@ export default class LinkSandbox extends SfCommand<{ status: string }> {
   public async run(): Promise<{ status: string }> {
     const { flags } = await this.parse(LinkSandbox);
     
-    // BC: Support legacy targetusername flag
-    let org = flags['target-org'];
-    if (!org && flags['targetusername']) {
-      this.warn('--targetusername is deprecated. Use --target-org instead.');
-      org = flags['targetusername'];
-    }
+    const org = flags['target-org'];
 
     if (!flags['organization-id'] && !flags['sandbox-username']) {
       throw new Error('Parameter organization-id or sandbox-username is required.');
