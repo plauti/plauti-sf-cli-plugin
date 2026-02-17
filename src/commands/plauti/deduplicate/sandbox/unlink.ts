@@ -2,6 +2,7 @@ import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -27,13 +28,26 @@ export default class UnlinkSandbox extends SfCommand<{ status: string }> {
     'plauti-cloud-api-key': Flags.string({
       description: 'Plauti Cloud Api Key',
       required: true
+    }),
+    json: Flags.boolean({
+      description: 'Format output as json',
+      default: false
+    }),
+    verbose: Flags.boolean({
+      description: 'Show verbose output including job IDs and file paths',
+      default: false
     })
   };
 
   public static readonly requiresProject = false;
 
+  private logger!: LoggingUtility;
+
   public async run(): Promise<{ status: string }> {
     const { flags } = await this.parse(UnlinkSandbox);
+    
+    this.logger = createLogger(flags);
+    const spinnerLogger = this.logger.createSpinnerLogger();
     
     const org = flags['target-org'];
 
@@ -45,7 +59,9 @@ export default class UnlinkSandbox extends SfCommand<{ status: string }> {
       throw new Error('Parameter plauti-cloud-api-key is required.');
     }
 
-    this.spinner.start('Unlinking sandbox');
+    if (spinnerLogger.shouldShowSpinner) {
+      this.spinner.start('Unlinking sandbox');
+    }
     
     try {
       const fetch = (await import('node-fetch')).default;
@@ -60,10 +76,18 @@ export default class UnlinkSandbox extends SfCommand<{ status: string }> {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      this.spinner.stop('Done!');
+      if (spinnerLogger.shouldShowSpinner) {
+        this.spinner.stop('Done!');
+      }
     } catch (error) {
-      this.spinner.stop('Failed!');
-      throw new Error('Failed to unlink sandbox. ' + error);
+      if (spinnerLogger.shouldShowSpinner) {
+        this.spinner.stop('Failed!');
+      }
+      throw new Error(formatError('unlink sandbox', `${error}`));
+    }
+
+    if (flags.json) {
+      this.logger.json({ status: 'done' });
     }
 
     return {

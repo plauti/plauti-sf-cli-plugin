@@ -3,6 +3,7 @@ import { Messages, Connection } from '@salesforce/core';
 import * as fs from 'fs-extra';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -48,6 +49,14 @@ export default class ExportConfig extends SfCommand<{ path: string }> {
       description: 'Poll interval in seconds',
       required: false,
       default: 3
+    }),
+    json: Flags.boolean({
+      description: 'Format output as json',
+      default: false
+    }),
+    verbose: Flags.boolean({
+      description: 'Show verbose output including job IDs and file paths',
+      default: false
     })
   };
 
@@ -57,17 +66,24 @@ export default class ExportConfig extends SfCommand<{ path: string }> {
   private static readonly EXPORT_CONFIG_JOB_STAT_PATH = '/dupcheck/dc3Api/admin/export-config-job-stat';
   private static readonly EXPORT_CONFIG_DOWNLOAD = '/dupcheck/dc3Api/admin/export-config-download';
 
+  private logger!: LoggingUtility;
+
   public async run(): Promise<{ path: string }> {
     const { flags } = await this.parse(ExportConfig);
     
+    this.logger = createLogger(flags);
+    const spinnerLogger = this.logger.createSpinnerLogger();
+
     const targetOrg = flags['target-org'];
     const conn = (targetOrg as any).getConnection();
     const filePath = flags.file as string;
 
-    this.spinner.start('Downloading export file');
+    if (spinnerLogger.shouldShowSpinner) {
+      this.spinner.start('Downloading export file');
+    }
 
     const jobId = await this.submitJob(conn);
-    this.log('Job id: ' + jobId);
+    this.logger.logJobDetails('jobId', jobId);
 
     if (jobId == null) {
       this.throwError('Failed to upload file, no job id.');
@@ -81,13 +97,21 @@ export default class ExportConfig extends SfCommand<{ path: string }> {
     }
 
     const fileContent = await this.downloadFile(conn, jobId);
-    this.spinner.stop('Done!');
+    
+    if (spinnerLogger.shouldShowSpinner) {
+      this.spinner.stop('Done!');
+    }
 
     await fs.writeFile(filePath, fileContent, {
       encoding: 'utf-8',
       flag: 'w'
     });
-    this.log('File: ' + filePath);
+    
+    this.logger.logJobDetails('filePath', filePath);
+
+    if (flags.json) {
+      this.logger.json({ path: filePath });
+    }
 
     return {
       path: filePath
@@ -149,7 +173,10 @@ export default class ExportConfig extends SfCommand<{ path: string }> {
   }
 
   private throwError(message: string): never {
-    this.spinner.stop('Failed!');
-    throw new Error('Failed to export configuration file. ' + (message ? message : ''));
+    const spinnerLogger = this.logger.createSpinnerLogger();
+    if (spinnerLogger.shouldShowSpinner) {
+      this.spinner.stop('Failed!');
+    }
+    throw new Error(formatError('export configuration file', message));
   }
 }

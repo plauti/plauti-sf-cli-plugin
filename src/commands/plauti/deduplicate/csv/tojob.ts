@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as readline from 'readline';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -82,22 +83,33 @@ export default class CsvTojob extends SfCommand<string> {
     delimiter: Flags.string({ 
       description: 'Csv Delimiter', 
       default: ',' 
+    }),
+    json: Flags.boolean({
+      description: 'Format output as json',
+      default: false
+    }),
+    verbose: Flags.boolean({
+      description: 'Show verbose output including job IDs and file paths',
+      default: false
     })
   };
 
   public static readonly requiresProject = false;
 
   private static groupCounter: number = 0;
+  private logger!: LoggingUtility;
 
   public async run(): Promise<string> {
     const { flags } = await this.parse(CsvTojob);
+    
+    this.logger = createLogger(flags);
     
     const targetOrg = flags['target-org'];
     const conn = (targetOrg as any).getConnection();
     const groupMap = new Map<string, DcGroup>();
     const masterGroupMap = new Map<number, string>();
 
-    this.log('Start reading csv.');
+    this.logger.logProgress('Start reading csv.');
     const fileStream = fs.createReadStream(flags.file as string);
 
     const linereader = readline.createInterface({
@@ -144,14 +156,17 @@ export default class CsvTojob extends SfCommand<string> {
         groupMap.get(sourceId)?.addMatchedRecord(matchId);
       }).on('close', async () => {
         try {
-          this.log(`Done reading csv. Parsed ${groupMap.size} groups.`);
+          this.logger.logProgress(`Done reading csv. Parsed ${groupMap.size} groups.`);
 
           if (0 === groupMap.size) {
+            if (flags.json) {
+              this.logger.json({});
+            }
             resolve('{}');
             return;
           }
 
-          this.log('Inserting Duplicate Check Job into Salesforce.');
+          this.logger.logProgress('Inserting Duplicate Check Job into Salesforce.');
 
           const dcJobSobject: Record<string, unknown> = {
             dupcheck__name__c: `SF CLI: Create Job from CSV File: '${flags.file}'`,
@@ -166,9 +181,9 @@ export default class CsvTojob extends SfCommand<string> {
           let dcJob: { id: string };
           try {
             dcJob = await conn.sobject('dupcheck__dcJob__c').create(dcJobSobject) as { id: string };
-            this.log(`Inserted Duplicate Check Job into Salesforce: ${dcJob.id}.`);
+            this.logger.logJobDetails('dcJobId', dcJob.id);
           } catch (error) {
-            reject(new Error(`Could not insert job into Salesforce: ${error}`));
+            reject(new Error(formatError('insert job into Salesforce', `${error}`)));
             return;
           }
 
@@ -192,7 +207,7 @@ export default class CsvTojob extends SfCommand<string> {
               largestGroupSize = groupSize;
             }
           }
-          this.log('Inserting Duplicate Check Groups into Salesforce.');
+          this.logger.logProgress('Inserting Duplicate Check Groups into Salesforce.');
 
           // chunk grouplist into chunks of 200 groups and push to sf
           const chunkSize = 200;
@@ -233,7 +248,7 @@ export default class CsvTojob extends SfCommand<string> {
             }
           }
 
-          this.log('Inserting Duplicate Check Pairs into Salesforce.');
+          this.logger.logProgress('Inserting Duplicate Check Pairs into Salesforce.');
 
           // chunk the dc duplicate pairs into chunks of 200 and push to sf
           for (let i = 0; i < dcPairList.length; i += chunkSize) {
@@ -250,12 +265,16 @@ export default class CsvTojob extends SfCommand<string> {
             } catch {
               errorCount += currentPairListChunk.length;
             }
-            this.log(`Inserted ${successCount} pairs, encountered ${errorCount} errors.`);
-            this.log('Sleeping for 5 seconds.');
+            this.logger.logProgress(`Inserted ${successCount} pairs, encountered ${errorCount} errors.`);
+            this.logger.logProgress('Sleeping for 5 seconds.');
             await delay(5000);
           }
 
-          this.log('Done.');
+          this.logger.logProgress('Done.');
+          
+          if (flags.json) {
+            this.logger.json({});
+          }
           resolve('{}');
         } catch (error) {
           reject(error);

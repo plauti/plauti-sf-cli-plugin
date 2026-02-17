@@ -3,6 +3,7 @@ import { Messages, Connection } from '@salesforce/core';
 import * as fs from 'fs-extra';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -50,6 +51,14 @@ export default class ImportConfig extends SfCommand<{ ok: string; warnings?: unk
       description: 'Poll interval in seconds',
       required: false,
       default: 3
+    }),
+    json: Flags.boolean({
+      description: 'Format output as json',
+      default: false
+    }),
+    verbose: Flags.boolean({
+      description: 'Show verbose output including job IDs and file paths',
+      default: false
     })
   };
 
@@ -58,14 +67,21 @@ export default class ImportConfig extends SfCommand<{ ok: string; warnings?: unk
   private static readonly IMPORT_CONFIG_JOB_SUBMIT = '/dupcheck/dc3Api/admin/import-config';
   private static readonly IMPORT_CONFIG_JOB_STAT_PATH = '/dupcheck/dc3Api/admin/import-config-job-stat';
 
+  private logger!: LoggingUtility;
+
   public async run(): Promise<{ ok: string; warnings?: unknown }> {
     const { flags } = await this.parse(ImportConfig);
     
+    this.logger = createLogger(flags);
+    const spinnerLogger = this.logger.createSpinnerLogger();
+
     const targetOrg = flags['target-org'];
     const conn = (targetOrg as any).getConnection();
     const filePath = flags.file as string;
 
-    this.spinner.start('Importing configuration file');
+    if (spinnerLogger.shouldShowSpinner) {
+      this.spinner.start('Importing configuration file');
+    }
 
     const stats = fs.statSync(filePath);
 
@@ -76,7 +92,7 @@ export default class ImportConfig extends SfCommand<{ ok: string; warnings?: unk
     }
 
     const jobId = await this.uploadFile(conn, filePath);
-    this.log('Job Id: ' + jobId);
+    this.logger.logJobDetails('jobId', jobId);
 
     if (jobId == null) {
       this.throwError('Failed to upload file, no job id.');
@@ -89,7 +105,13 @@ export default class ImportConfig extends SfCommand<{ ok: string; warnings?: unk
       pollResponse = await this.pollJob(conn, jobId);
     }
 
-    this.spinner.stop('Done!');
+    if (spinnerLogger.shouldShowSpinner) {
+      this.spinner.stop('Done!');
+    }
+
+    if (flags.json) {
+      this.logger.json({ ok: 'true', warnings: pollResponse.warnings });
+    }
 
     return {
       ok: 'true',
@@ -149,7 +171,10 @@ export default class ImportConfig extends SfCommand<{ ok: string; warnings?: unk
   }
 
   private throwError(message: string): never {
-    this.spinner.stop('Failed!');
-    throw new Error('Failed to import configuration file. ' + (message ? message : ''));
+    const spinnerLogger = this.logger.createSpinnerLogger();
+    if (spinnerLogger.shouldShowSpinner) {
+      this.spinner.stop('Failed!');
+    }
+    throw new Error(formatError('import configuration file', message));
   }
 }

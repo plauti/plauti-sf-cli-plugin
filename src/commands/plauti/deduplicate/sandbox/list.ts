@@ -2,6 +2,7 @@ import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,13 +24,26 @@ export default class ListSandbox extends SfCommand<{ status: string; sandboxes: 
     'plauti-cloud-api-key': Flags.string({
       description: 'Plauti Cloud Api Key',
       required: true
+    }),
+    json: Flags.boolean({
+      description: 'Format output as json',
+      default: false
+    }),
+    verbose: Flags.boolean({
+      description: 'Show verbose output including job IDs and file paths',
+      default: false
     })
   };
 
   public static readonly requiresProject = false;
 
+  private logger!: LoggingUtility;
+
   public async run(): Promise<{ status: string; sandboxes: unknown }> {
     const { flags } = await this.parse(ListSandbox);
+    
+    this.logger = createLogger(flags);
+    const spinnerLogger = this.logger.createSpinnerLogger();
     
     const org = flags['target-org'];
 
@@ -37,7 +51,9 @@ export default class ListSandbox extends SfCommand<{ status: string; sandboxes: 
       throw new Error('Parameter plauti-cloud-api-key is required.');
     }
 
-    this.spinner.start('Getting linked sandboxes');
+    if (spinnerLogger.shouldShowSpinner) {
+      this.spinner.start('Getting linked sandboxes');
+    }
     let content = null;
 
     try {
@@ -53,11 +69,21 @@ export default class ListSandbox extends SfCommand<{ status: string; sandboxes: 
       }
 
       content = await response.json();
-      this.logJson(content);
-      this.spinner.stop('Done!');
+      
+      if (flags.json) {
+        this.logger.json({ status: 'done', sandboxes: content });
+      } else {
+        this.logger.info(JSON.stringify(content, null, 2));
+      }
+      
+      if (spinnerLogger.shouldShowSpinner) {
+        this.spinner.stop('Done!');
+      }
     } catch (error) {
-      this.spinner.stop('Failed!');
-      throw new Error('Failed to get linked sandboxes. ' + error);
+      if (spinnerLogger.shouldShowSpinner) {
+        this.spinner.stop('Failed!');
+      }
+      throw new Error(formatError('get linked sandboxes', `${error}`));
     }
 
     return {
