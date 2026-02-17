@@ -1,0 +1,523 @@
+{
+  "commands": {
+    "plauti:duplicatecheck:config:export": {
+      "aliases": [],
+      "args": {},
+      "examples": [
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json",
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json --poll-interval 10"
+      ],
+      "flags": {
+        "json": {
+          "description": "Format output as json.",
+          "helpGroup": "GLOBAL",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "flags-dir": {
+          "helpGroup": "GLOBAL",
+          "name": "flags-dir",
+          "summary": "Import flag values from a directory.",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "target-org": {
+          "char": "o",
+          "name": "target-org",
+          "noCacheDefault": true,
+          "required": true,
+          "summary": "Username or alias of the target org. Not required if the `target-org` configuration variable is already set.",
+          "hasDynamicHelp": true,
+          "multiple": false,
+          "type": "option"
+        },
+        "file": {
+          "description": "Export file path and name",
+          "name": "file",
+          "required": true,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "poll-interval": {
+          "description": "Poll interval in seconds",
+          "name": "poll-interval",
+          "required": false,
+          "default": 3,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        }
+      },
+      "hasDynamicHelp": true,
+      "hiddenAliases": [],
+      "id": "plauti:duplicatecheck:config:export",
+      "pluginAlias": "plauti-sfdx",
+      "pluginName": "plauti-sfdx",
+      "pluginType": "core",
+      "strict": true,
+      "summary": "Export Plauti Duplicate Check configuration",
+      "enableJsonFlag": true,
+      "requiresProject": false,
+      "EXPORT_CONFIG_JOB_SUBMIT": "/dupcheck/dc3Api/admin/export-config",
+      "EXPORT_CONFIG_JOB_STAT_PATH": "/dupcheck/dc3Api/admin/export-config-job-stat",
+      "EXPORT_CONFIG_DOWNLOAD": "/dupcheck/dc3Api/admin/export-config-download",
+      "isESM": true,
+      "relativePath": [
+        "lib",
+        "commands",
+        "plauti",
+        "duplicatecheck",
+        "config",
+        "export.js"
+      ]
+    },
+    "plauti:duplicatecheck:config:import": {
+      "aliases": [],
+      "args": {},
+      "examples": [
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json",
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json --poll-interval 10"
+      ],
+      "flags": {
+        "json": {
+          "description": "Format output as json.",
+          "helpGroup": "GLOBAL",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "flags-dir": {
+          "helpGroup": "GLOBAL",
+          "name": "flags-dir",
+          "summary": "Import flag values from a directory.",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "target-org": {
+          "char": "o",
+          "name": "target-org",
+          "noCacheDefault": true,
+          "required": true,
+          "summary": "Username or alias of the target org. Not required if the `target-org` configuration variable is already set.",
+          "hasDynamicHelp": true,
+          "multiple": false,
+          "type": "option"
+        },
+        "file": {
+          "description": "File path",
+          "name": "file",
+          "required": true,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "poll-interval": {
+          "description": "Poll interval in seconds",
+          "name": "poll-interval",
+          "required": false,
+          "default": 3,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        }
+      },
+      "hasDynamicHelp": true,
+      "hiddenAliases": [],
+      "id": "plauti:duplicatecheck:config:import",
+      "pluginAlias": "plauti-sfdx",
+      "pluginName": "plauti-sfdx",
+      "pluginType": "core",
+      "strict": true,
+      "summary": "Import Plauti Duplicate Check configuration",
+      "enableJsonFlag": true,
+      "requiresProject": false,
+      "IMPORT_CONFIG_JOB_SUBMIT": "/dupcheck/dc3Api/admin/import-config",
+      "IMPORT_CONFIG_JOB_STAT_PATH": "/dupcheck/dc3Api/admin/import-config-job-stat",
+      "isESM": true,
+      "relativePath": [
+        "lib",
+        "commands",
+        "plauti",
+        "duplicatecheck",
+        "config",
+        "import.js"
+      ]
+    },
+    "plauti:duplicatecheck:csv:tojob": {
+      "aliases": [],
+      "args": {},
+      "examples": [
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001",
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001 --set-master-for-merge"
+      ],
+      "flags": {
+        "json": {
+          "description": "Format output as json.",
+          "helpGroup": "GLOBAL",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "flags-dir": {
+          "helpGroup": "GLOBAL",
+          "name": "flags-dir",
+          "summary": "Import flag values from a directory.",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "target-org": {
+          "char": "o",
+          "name": "target-org",
+          "noCacheDefault": true,
+          "required": true,
+          "summary": "Username or alias of the target org. Not required if the `target-org` configuration variable is already set.",
+          "hasDynamicHelp": true,
+          "multiple": false,
+          "type": "option"
+        },
+        "file": {
+          "description": "Csv file path",
+          "name": "file",
+          "required": true,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "source-object": {
+          "description": "Source Object Prefix",
+          "name": "source-object",
+          "required": true,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "match-object": {
+          "description": "Match Object Prefix",
+          "name": "match-object",
+          "required": true,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "set-master-for-merge": {
+          "description": "Set Master record for Merge",
+          "name": "set-master-for-merge",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "delimiter": {
+          "description": "Csv Delimiter",
+          "name": "delimiter",
+          "default": ",",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        }
+      },
+      "hasDynamicHelp": true,
+      "hiddenAliases": [],
+      "id": "plauti:duplicatecheck:csv:tojob",
+      "pluginAlias": "plauti-sfdx",
+      "pluginName": "plauti-sfdx",
+      "pluginType": "core",
+      "strict": true,
+      "summary": "Create A Plauti Duplicate Check Job based on a CSV File",
+      "enableJsonFlag": true,
+      "requiresProject": false,
+      "groupCounter": 0,
+      "isESM": true,
+      "relativePath": [
+        "lib",
+        "commands",
+        "plauti",
+        "duplicatecheck",
+        "csv",
+        "tojob.js"
+      ]
+    },
+    "plauti:duplicatecheck:license:refresh": {
+      "aliases": [],
+      "args": {},
+      "examples": [
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com"
+      ],
+      "flags": {
+        "json": {
+          "description": "Format output as json.",
+          "helpGroup": "GLOBAL",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "flags-dir": {
+          "helpGroup": "GLOBAL",
+          "name": "flags-dir",
+          "summary": "Import flag values from a directory.",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "target-org": {
+          "char": "o",
+          "name": "target-org",
+          "noCacheDefault": true,
+          "required": true,
+          "summary": "Username or alias of the target org. Not required if the `target-org` configuration variable is already set.",
+          "hasDynamicHelp": true,
+          "multiple": false,
+          "type": "option"
+        }
+      },
+      "hasDynamicHelp": true,
+      "hiddenAliases": [],
+      "id": "plauti:duplicatecheck:license:refresh",
+      "pluginAlias": "plauti-sfdx",
+      "pluginName": "plauti-sfdx",
+      "pluginType": "core",
+      "strict": true,
+      "summary": "Refresh Duplicate Check for Salesforce license",
+      "enableJsonFlag": true,
+      "requiresProject": false,
+      "isESM": true,
+      "relativePath": [
+        "lib",
+        "commands",
+        "plauti",
+        "duplicatecheck",
+        "license",
+        "refresh.js"
+      ]
+    },
+    "plauti:duplicatecheck:sandbox:link": {
+      "aliases": [],
+      "args": {},
+      "examples": [
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456",
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --sandbox-username scratch_org_1 --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456"
+      ],
+      "flags": {
+        "json": {
+          "description": "Format output as json.",
+          "helpGroup": "GLOBAL",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "flags-dir": {
+          "helpGroup": "GLOBAL",
+          "name": "flags-dir",
+          "summary": "Import flag values from a directory.",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "target-org": {
+          "char": "o",
+          "name": "target-org",
+          "noCacheDefault": true,
+          "required": true,
+          "summary": "Username or alias of the target org. Not required if the `target-org` configuration variable is already set.",
+          "hasDynamicHelp": true,
+          "multiple": false,
+          "type": "option"
+        },
+        "organization-id": {
+          "description": "Sandbox Organization Id",
+          "name": "organization-id",
+          "required": false,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "sandbox-username": {
+          "description": "Sandbox User Name",
+          "name": "sandbox-username",
+          "required": false,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "sandbox-name": {
+          "description": "Sandbox Name",
+          "name": "sandbox-name",
+          "required": true,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "plauti-cloud-api-key": {
+          "description": "Plauti Cloud Api Key",
+          "name": "plauti-cloud-api-key",
+          "required": true,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        }
+      },
+      "hasDynamicHelp": true,
+      "hiddenAliases": [],
+      "id": "plauti:duplicatecheck:sandbox:link",
+      "pluginAlias": "plauti-sfdx",
+      "pluginName": "plauti-sfdx",
+      "pluginType": "core",
+      "strict": true,
+      "summary": "Link Sandbox to Production",
+      "enableJsonFlag": true,
+      "requiresProject": false,
+      "isESM": true,
+      "relativePath": [
+        "lib",
+        "commands",
+        "plauti",
+        "duplicatecheck",
+        "sandbox",
+        "link.js"
+      ]
+    },
+    "plauti:duplicatecheck:sandbox:list": {
+      "aliases": [],
+      "args": {},
+      "examples": [
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --plauti-cloud-api-key plauti_123_123456"
+      ],
+      "flags": {
+        "json": {
+          "description": "Format output as json.",
+          "helpGroup": "GLOBAL",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "flags-dir": {
+          "helpGroup": "GLOBAL",
+          "name": "flags-dir",
+          "summary": "Import flag values from a directory.",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "target-org": {
+          "char": "o",
+          "name": "target-org",
+          "noCacheDefault": true,
+          "required": true,
+          "summary": "Username or alias of the target org. Not required if the `target-org` configuration variable is already set.",
+          "hasDynamicHelp": true,
+          "multiple": false,
+          "type": "option"
+        },
+        "plauti-cloud-api-key": {
+          "description": "Plauti Cloud Api Key",
+          "name": "plauti-cloud-api-key",
+          "required": true,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        }
+      },
+      "hasDynamicHelp": true,
+      "hiddenAliases": [],
+      "id": "plauti:duplicatecheck:sandbox:list",
+      "pluginAlias": "plauti-sfdx",
+      "pluginName": "plauti-sfdx",
+      "pluginType": "core",
+      "strict": true,
+      "summary": "List all sandbox orgs",
+      "enableJsonFlag": true,
+      "requiresProject": false,
+      "isESM": true,
+      "relativePath": [
+        "lib",
+        "commands",
+        "plauti",
+        "duplicatecheck",
+        "sandbox",
+        "list.js"
+      ]
+    },
+    "plauti:duplicatecheck:sandbox:unlink": {
+      "aliases": [],
+      "args": {},
+      "examples": [
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --plauti-cloud-api-key plauti_123_123456",
+        "<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --sandbox-username scratch_org_1 --plauti-cloud-api-key plauti_123_123456"
+      ],
+      "flags": {
+        "json": {
+          "description": "Format output as json.",
+          "helpGroup": "GLOBAL",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "flags-dir": {
+          "helpGroup": "GLOBAL",
+          "name": "flags-dir",
+          "summary": "Import flag values from a directory.",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "target-org": {
+          "char": "o",
+          "name": "target-org",
+          "noCacheDefault": true,
+          "required": true,
+          "summary": "Username or alias of the target org. Not required if the `target-org` configuration variable is already set.",
+          "hasDynamicHelp": true,
+          "multiple": false,
+          "type": "option"
+        },
+        "organization-id": {
+          "description": "Sandbox Organization Id",
+          "name": "organization-id",
+          "required": false,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "sandbox-username": {
+          "description": "Sandbox User Name",
+          "name": "sandbox-username",
+          "required": false,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "plauti-cloud-api-key": {
+          "description": "Plauti Cloud Api Key",
+          "name": "plauti-cloud-api-key",
+          "required": true,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        }
+      },
+      "hasDynamicHelp": true,
+      "hiddenAliases": [],
+      "id": "plauti:duplicatecheck:sandbox:unlink",
+      "pluginAlias": "plauti-sfdx",
+      "pluginName": "plauti-sfdx",
+      "pluginType": "core",
+      "strict": true,
+      "summary": "Unlink Sandbox from Production",
+      "enableJsonFlag": true,
+      "requiresProject": false,
+      "isESM": true,
+      "relativePath": [
+        "lib",
+        "commands",
+        "plauti",
+        "duplicatecheck",
+        "sandbox",
+        "unlink.js"
+      ]
+    }
+  },
+  "version": "0.1.0"
+}

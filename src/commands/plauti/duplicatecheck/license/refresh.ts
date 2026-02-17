@@ -1,35 +1,42 @@
-import { SfdxCommand } from '@salesforce/command';
-import { Messages, SfError} from '@salesforce/core';
-import { AnyJson } from '@salesforce/ts-types';
+import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
+import { Messages } from '@salesforce/core';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 Messages.importMessagesDirectory(__dirname);
 
-export default class RefreshLicense extends SfdxCommand {
+export default class Refresh extends SfCommand<{ status: string }> {
+  public static readonly summary = 'Refresh Duplicate Check for Salesforce license';
+  
+  public static readonly examples = [
+    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com'
+  ];
 
-    public static description = 'Refresh Duplicate Check for Salesforce license';
+  public static readonly flags = {
+    'target-org': Flags.requiredOrg()
+  };
 
-    public static examples = [
-        '$ sfdx plauti:duplicatecheck:license:refresh --targetusername myOrg@example.com'
-    ];
-    protected static requiresUsername = true;
-    protected static supportsDevhubUsername = false;
-    protected static requiresProject = false;
+  public static readonly requiresProject = false;
 
-    public async run(): Promise<AnyJson> {
+  public async run(): Promise<{ status: string }> {
+    const { flags } = await this.parse(Refresh);
+    const conn = (flags['target-org'] as any).getConnection();
 
-        const conn = this.org.getConnection();
-
-        this.ux.startSpinner('Refreshing Duplicate Check for Salesforce license');
-        try {
-            await conn.apex.post('/dupcheck/dc3Api/admin/refresh-license', {});
-            this.ux.stopSpinner('Done!');
-        } catch (e) {
-            this.ux.stopSpinner('Failed!');
-            throw new SfError('Failed to refresh Duplicate Check for Salesforce license. ' + e);
-        }
-
-        return {
-            status: 'done'
-        };
+    this.spinner.start('Refreshing Duplicate Check for Salesforce license');
+    
+    try {
+      await conn.apex.post('/dupcheck/dc3Api/admin/refresh-license', {});
+      this.spinner.stop('Done!');
+    } catch (error) {
+      this.spinner.stop('Failed!');
+      throw new Error(`Failed to refresh Duplicate Check for Salesforce license. ${error}`);
     }
+
+    return {
+      status: 'done'
+    };
+  }
 }

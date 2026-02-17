@@ -1,13 +1,17 @@
-import { flags, FlagsConfig, SfdxCommand } from '@salesforce/command';
-import { Messages, SfError } from '@salesforce/core';
-import { AnyJson } from '@salesforce/ts-types';
+import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
+import { Messages, Connection } from '@salesforce/core';
 import * as fs from 'fs-extra';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 Messages.importMessagesDirectory(__dirname);
 
 export interface SubmitJobResponse {
   ok?: boolean;
-  jobId?: object;
+  jobId?: string;
   errorMessage: string;
 }
 
@@ -15,132 +19,132 @@ export interface PollJobResponse {
   ok?: boolean;
   errorMessage: string;
   jobInfo?: JobInfo;
-  warnings?: AnyJson;
+  warnings?: unknown;
 }
 
 export interface JobInfo {
   Status?: string;
   ExtendedStatus: string;
-  jobInfo?: AnyJson;
+  jobInfo?: unknown;
 }
 
-export default class ImportConfig extends SfdxCommand {
-
-  public static description = 'Import Plauti Duplicate Check configuration';
-
-  public static examples = [
-    '$ sfdx plauti:duplicatecheck:config:import --targetusername myOrg@example.com --file ./export/test_config.json',
-    '$ sfdx plauti:duplicatecheck:config:import --targetusername myOrg@example.com --file ./export/test_config.json --pollinterval 10'
+export default class ImportConfig extends SfCommand<{ ok: string; warnings?: unknown }> {
+  public static readonly summary = 'Import Plauti Duplicate Check configuration';
+  
+  public static readonly examples = [
+    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json',
+    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json --poll-interval 10'
   ];
-  protected static requiresUsername = true;
-  protected static supportsDevhubUsername = false;
-  protected static requiresProject = false;
 
-  protected static flagsConfig: FlagsConfig = {
-    file: flags.filepath({
+  public static readonly flags = {
+    'target-org': Flags.requiredOrg(),
+    file: Flags.file({
       description: 'File path',
-      required: true
+      required: true,
+      exists: true
     }),
-    pollinterval: flags.integer({
+    'poll-interval': Flags.integer({
       description: 'Poll interval in seconds',
       required: false,
       default: 3
     })
   };
 
-  private static IMPORT_CONFIG_JOB_SUBMIT = '/dupcheck/dc3Api/admin/import-config';
-  private static IMPORT_CONFIG_JOB_STAT_PATH = '/dupcheck/dc3Api/admin/import-config-job-stat';
+  public static readonly requiresProject = false;
 
-  public async run(): Promise<AnyJson> {
+  private static readonly IMPORT_CONFIG_JOB_SUBMIT = '/dupcheck/dc3Api/admin/import-config';
+  private static readonly IMPORT_CONFIG_JOB_STAT_PATH = '/dupcheck/dc3Api/admin/import-config-job-stat';
 
-    this.ux.startSpinner('Importing configuration file');
-    const conn = this.org.getConnection();
-    const ux = this.ux;
+  public async run(): Promise<{ ok: string; warnings?: unknown }> {
+    const { flags } = await this.parse(ImportConfig);
+    const conn = (flags['target-org'] as any).getConnection();
+    const filePath = flags.file as string;
 
-    const filePath = this.flags.file;
+    this.spinner.start('Importing configuration file');
+
     const stats = fs.statSync(filePath);
 
-    if (!stats.isFile) {
-      throwError('File not found: ' + filePath);
+    if (!stats.isFile()) {
+      this.throwError('File not found: ' + filePath);
     } else if (stats.isDirectory()) {
-      throwError('Can not import directory: ' + filePath);
+      this.throwError('Cannot import directory: ' + filePath);
     }
 
-    const jobId = await uploadFile();
-    this.ux.log('Job Id: ' + jobId);
+    const jobId = await this.uploadFile(conn, filePath);
+    this.log('Job Id: ' + jobId);
 
     if (jobId == null) {
-      throwError('Failed to upload file, no job id.');
+      this.throwError('Failed to upload file, no job id.');
     }
 
-    let pollResponse: PollJobResponse = await pollJob();
+    let pollResponse: PollJobResponse | null = await this.pollJob(conn, jobId);
 
     while (!pollResponse) {
-      await sleep(this.flags.pollinterval);
-      pollResponse = await pollJob();
+      await this.sleep((flags['poll-interval'] as number) * 1000);
+      pollResponse = await this.pollJob(conn, jobId);
     }
+
+    this.spinner.stop('Done!');
 
     return {
       ok: 'true',
       warnings: pollResponse.warnings
     };
+  }
 
-    async function sleep(ms: number) {
-      return new Promise(resolve => {
-        setTimeout(resolve, ms);
-      });
-    }
+  private async sleep(ms: number): Promise<void> {
+    return new Promise(resolve => {
+      globalThis.setTimeout(resolve, ms);
+    });
+  }
 
-    async function pollJob() {
-
-      try {
-        const input = {
-          jobId
-        };
-        const body: { ok: boolean, errorMessage: string, jobInfo: { Status: string, ExtendedStatus: string} } = await conn.apex.post(ImportConfig.IMPORT_CONFIG_JOB_STAT_PATH, input);
-        if (!body.ok) {
-          throwError(body.errorMessage);
-        }
-
-        switch (body.jobInfo.Status) {
-          case 'Completed':
-            return body;
-          case 'Failed':
-            throwError(body.jobInfo.ExtendedStatus);
-          case 'Aborted':
-            throwError(body.jobInfo.ExtendedStatus);
-          default:
-            break;
-        }
-
-        return null;
-
-      } catch (e) {
-        console.log('pollingerror', e);
-       // throwError(e);
+  private async pollJob(conn: Connection, jobId: string): Promise<PollJobResponse | null> {
+    try {
+      const input = { jobId };
+      const body: { ok: boolean; errorMessage: string; jobInfo: { Status: string; ExtendedStatus: string } } = await conn.apex.post(ImportConfig.IMPORT_CONFIG_JOB_STAT_PATH, input);
+      
+      if (!body.ok) {
+        this.throwError(body.errorMessage);
       }
 
-    }
-
-    async function uploadFile() {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const fileAsJson = JSON.parse(fileContent);
-
-      try {
-        const response: { jobId } = await conn.apex.post(`${ImportConfig.IMPORT_CONFIG_JOB_SUBMIT}`, fileAsJson, {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'no-cache'
-        });
-        return response?.jobId;
-      } catch (e) {
-        throwError(e);
+      switch (body.jobInfo.Status) {
+        case 'Completed':
+          return body as PollJobResponse;
+        case 'Failed':
+          this.throwError(body.jobInfo.ExtendedStatus);
+          break;
+        case 'Aborted':
+          this.throwError(body.jobInfo.ExtendedStatus);
+          break;
+        default:
+          break;
       }
-    }
 
-    function throwError(message: string) {
-      ux.stopSpinner('Failed!');
-      throw new SfError('Failed to import configuration file. ' + ((message) ? message : ''));
+      return null;
+    } catch (error) {
+      this.log('Polling error', error);
+      return null;
     }
   }
 
+  private async uploadFile(conn: Connection, filePath: string): Promise<string> {
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const fileAsJson = JSON.parse(fileContent);
+
+    try {
+      const response: { jobId: string } = await conn.apex.post(ImportConfig.IMPORT_CONFIG_JOB_SUBMIT, fileAsJson, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-cache'
+      });
+      return response?.jobId;
+    } catch (error) {
+      this.throwError(`${error}`);
+      throw error;
+    }
+  }
+
+  private throwError(message: string): never {
+    this.spinner.stop('Failed!');
+    throw new Error('Failed to import configuration file. ' + (message ? message : ''));
+  }
 }

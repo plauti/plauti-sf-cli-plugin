@@ -1,64 +1,76 @@
-import { flags, FlagsConfig, SfdxCommand} from '@salesforce/command';
-import { Messages, Org, SfError} from '@salesforce/core';
-import { AnyJson } from '@salesforce/ts-types';
-import axios from 'axios';
+import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
+import { Messages, Org } from '@salesforce/core';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 Messages.importMessagesDirectory(__dirname);
 
-export default class LinkSandbox extends SfdxCommand {
-
-  public static description = 'Unlink Sandbox from Production';
-
-  public static examples = [
-    '$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organizationid 00DR0000001ossaMAA --plauticloudapikey plauti_123_123456',
-    '$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --sandboxusername scratch_org_1 --plauticloudapikey plauti_123_123456'
+export default class UnlinkSandbox extends SfCommand<{ status: string }> {
+  public static readonly summary = 'Unlink Sandbox from Production';
+  
+  public static readonly examples = [
+    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --plauti-cloud-api-key plauti_123_123456',
+    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --sandbox-username scratch_org_1 --plauti-cloud-api-key plauti_123_123456'
   ];
-  protected static requiresUsername = true;
-  protected static supportsDevhubUsername = false;
-  protected static requiresProject = false;
 
-  protected static flagsConfig: FlagsConfig = {
-    organizationid: flags.string({
+  public static readonly flags = {
+    'target-org': Flags.requiredOrg(),
+    'organization-id': Flags.string({
       description: 'Sandbox Organization Id',
       required: false
     }),
-    sandboxusername: flags.string({
+    'sandbox-username': Flags.string({
       description: 'Sandbox User Name',
       required: false
     }),
-    plauticloudapikey: flags.string({
+    'plauti-cloud-api-key': Flags.string({
       description: 'Plauti Cloud Api Key',
       required: true
     })
   };
 
-  public async run(): Promise<AnyJson> {
+  public static readonly requiresProject = false;
 
-    if (!this.flags.organizationid && !this.flags.sandboxusername) {
-      throw new SfError('Parameter organizationid or sandboxusername is required.');
+  public async run(): Promise<{ status: string }> {
+    const { flags } = await this.parse(UnlinkSandbox);
+    const org = flags['target-org'];
+
+    if (!flags['organization-id'] && !flags['sandbox-username']) {
+      throw new Error('Parameter organization-id or sandbox-username is required.');
     }
 
-    if (!this.flags.plauticloudapikey) {
-      throw new SfError('Parameter plauticloudapikey is required.');
+    if (!flags['plauti-cloud-api-key']) {
+      throw new Error('Parameter plauti-cloud-api-key is required.');
     }
 
-    let sandboxOrgId = this.flags.organizationid;
+    let sandboxOrgId = flags['organization-id'];
     if (!sandboxOrgId) {
-      const sandboxOrg = await Org.create({aliasOrUsername: this.flags.sandboxusername});
+      const sandboxOrg = await Org.create({ aliasOrUsername: flags['sandbox-username'] as string });
       sandboxOrgId = sandboxOrg.getOrgId();
     }
 
-    this.ux.startSpinner('Unlinking sandbox');
+    this.spinner.start('Unlinking sandbox');
+    
     try {
-      await axios.post(`https://cloud.plauti.com/public-api/rest-v1/sandbox-license/${sandboxOrgId}/${this.org.getOrgId()}`, {}, {
+      const fetch = (await import('node-fetch')).default;
+      const response = await fetch(`https://cloud.plauti.com/public-api/rest-v1/sandbox-license/${sandboxOrgId}/${(org as any).getOrgId()}`, {
+        method: 'POST',
         headers: {
-          Authorization: this.flags.plauticloudapikey
+          'Authorization': flags['plauti-cloud-api-key'] as string
         }
       });
-      this.ux.stopSpinner('Done!');
-    } catch (e) {
-      this.ux.stopSpinner('Failed!');
-      throw new SfError('Failed to unlink sandbox. ' + e);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      this.spinner.stop('Done!');
+    } catch (error) {
+      this.spinner.stop('Failed!');
+      throw new Error('Failed to unlink sandbox. ' + error);
     }
 
     return {
