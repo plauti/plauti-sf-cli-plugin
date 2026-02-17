@@ -62,6 +62,7 @@
   "oclif": {
     "commands": "./lib/commands",
     "bin": "sf",
+    "additionalBins": ["sfdx"],
     "topicSeparator": ":",
     "devPlugins": [
       "@oclif/plugin-help"

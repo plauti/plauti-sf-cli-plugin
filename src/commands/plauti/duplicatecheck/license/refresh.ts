@@ -12,18 +12,32 @@ export default class Refresh extends SfCommand<{ status: string }> {
   public static readonly summary = 'Refresh Duplicate Check for Salesforce license';
   
   public static readonly examples = [
-    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com'
+    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com',
+    '$ sfdx plauti:duplicatecheck:license:refresh --targetusername myOrg@example.com'
   ];
 
   public static readonly flags = {
-    'target-org': Flags.requiredOrg()
+    'target-org': Flags.requiredOrg(),
+    // BC: Support legacy flag name
+    'targetusername': Flags.requiredOrg({
+      hidden: true,
+      deprecated: { message: 'Use --target-org instead' }
+    })
   };
 
   public static readonly requiresProject = false;
 
   public async run(): Promise<{ status: string }> {
     const { flags } = await this.parse(Refresh);
-    const conn = (flags['target-org'] as any).getConnection();
+    
+    // BC: Support legacy targetusername flag
+    let targetOrg = flags['target-org'];
+    if (!targetOrg && flags['targetusername']) {
+      this.warn('--targetusername is deprecated. Use --target-org instead.');
+      targetOrg = flags['targetusername'];
+    }
+    
+    const conn = (targetOrg as any).getConnection();
 
     this.spinner.start('Refreshing Duplicate Check for Salesforce license');
     

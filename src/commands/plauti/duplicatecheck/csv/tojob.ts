@@ -54,11 +54,17 @@ export default class CsvTojob extends SfCommand<string> {
   
   public static readonly examples = [
     '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001',
-    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001 --set-master-for-merge'
+    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001 --set-master-for-merge',
+    '$ sfdx plauti:duplicatecheck:csv:tojob --targetusername myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001'
   ];
 
   public static readonly flags = {
     'target-org': Flags.requiredOrg(),
+    // BC: Support legacy flag name
+    'targetusername': Flags.requiredOrg({
+      hidden: true,
+      deprecated: { message: 'Use --target-org instead' }
+    }),
     file: Flags.file({ 
       description: 'Csv file path', 
       required: true,
@@ -88,7 +94,15 @@ export default class CsvTojob extends SfCommand<string> {
 
   public async run(): Promise<string> {
     const { flags } = await this.parse(CsvTojob);
-    const conn = (flags['target-org'] as any).getConnection();
+    
+    // BC: Support legacy targetusername flag
+    let targetOrg = flags['target-org'];
+    if (!targetOrg && flags['targetusername']) {
+      this.warn('--targetusername is deprecated. Use --target-org instead.');
+      targetOrg = flags['targetusername'];
+    }
+    
+    const conn = (targetOrg as any).getConnection();
     const groupMap = new Map<string, DcGroup>();
     const masterGroupMap = new Map<number, string>();
 

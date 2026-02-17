@@ -1,5 +1,5 @@
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
-import { Messages, Org } from '@salesforce/core';
+import { Messages } from '@salesforce/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 
@@ -9,22 +9,23 @@ const __dirname = dirname(__filename);
 Messages.importMessagesDirectory(__dirname);
 
 export default class UnlinkSandbox extends SfCommand<{ status: string }> {
-  public static readonly summary = 'Unlink Sandbox from Production';
+  public static readonly summary = 'Unlink Sandbox';
   
   public static readonly examples = [
     '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --plauti-cloud-api-key plauti_123_123456',
-    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --sandbox-username scratch_org_1 --plauti-cloud-api-key plauti_123_123456'
+    '$ sfdx plauti:duplicatecheck:sandbox:unlink --targetusername myOrg@example.com --organization-id 00DR0000001ossaMAA --plauti-cloud-api-key plauti_123_123456'
   ];
 
   public static readonly flags = {
     'target-org': Flags.requiredOrg(),
+    // BC: Support legacy flag name
+    'targetusername': Flags.requiredOrg({
+      hidden: true,
+      deprecated: { message: 'Use --target-org instead' }
+    }),
     'organization-id': Flags.string({
       description: 'Sandbox Organization Id',
-      required: false
-    }),
-    'sandbox-username': Flags.string({
-      description: 'Sandbox User Name',
-      required: false
+      required: true
     }),
     'plauti-cloud-api-key': Flags.string({
       description: 'Plauti Cloud Api Key',
@@ -36,28 +37,28 @@ export default class UnlinkSandbox extends SfCommand<{ status: string }> {
 
   public async run(): Promise<{ status: string }> {
     const { flags } = await this.parse(UnlinkSandbox);
-    const org = flags['target-org'];
+    
+    // BC: Support legacy targetusername flag
+    let org = flags['target-org'];
+    if (!org && flags['targetusername']) {
+      this.warn('--targetusername is deprecated. Use --target-org instead.');
+      org = flags['targetusername'];
+    }
 
-    if (!flags['organization-id'] && !flags['sandbox-username']) {
-      throw new Error('Parameter organization-id or sandbox-username is required.');
+    if (!flags['organization-id']) {
+      throw new Error('Parameter organization-id is required.');
     }
 
     if (!flags['plauti-cloud-api-key']) {
       throw new Error('Parameter plauti-cloud-api-key is required.');
     }
 
-    let sandboxOrgId = flags['organization-id'];
-    if (!sandboxOrgId) {
-      const sandboxOrg = await Org.create({ aliasOrUsername: flags['sandbox-username'] as string });
-      sandboxOrgId = sandboxOrg.getOrgId();
-    }
-
     this.spinner.start('Unlinking sandbox');
     
     try {
       const fetch = (await import('node-fetch')).default;
-      const response = await fetch(`https://cloud.plauti.com/public-api/rest-v1/sandbox-license/${sandboxOrgId}/${(org as any).getOrgId()}`, {
-        method: 'POST',
+      const response = await fetch(`https://cloud.plauti.com/public-api/rest-v1/sandbox-license/${flags['organization-id']}/${(org as any).getOrgId()}`, {
+        method: 'DELETE',
         headers: {
           'Authorization': flags['plauti-cloud-api-key'] as string
         }

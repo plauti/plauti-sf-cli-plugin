@@ -12,11 +12,17 @@ export default class ListSandbox extends SfCommand<{ status: string; sandboxes: 
   public static readonly summary = 'List all sandbox orgs';
   
   public static readonly examples = [
-    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --plauti-cloud-api-key plauti_123_123456'
+    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --plauti-cloud-api-key plauti_123_123456',
+    '$ sfdx plauti:duplicatecheck:sandbox:list --targetusername myOrg@example.com --plauti-cloud-api-key plauti_123_123456'
   ];
 
   public static readonly flags = {
     'target-org': Flags.requiredOrg(),
+    // BC: Support legacy flag name
+    'targetusername': Flags.requiredOrg({
+      hidden: true,
+      deprecated: { message: 'Use --target-org instead' }
+    }),
     'plauti-cloud-api-key': Flags.string({
       description: 'Plauti Cloud Api Key',
       required: true
@@ -27,7 +33,13 @@ export default class ListSandbox extends SfCommand<{ status: string; sandboxes: 
 
   public async run(): Promise<{ status: string; sandboxes: unknown }> {
     const { flags } = await this.parse(ListSandbox);
-    const org = flags['target-org'];
+    
+    // BC: Support legacy targetusername flag
+    let org = flags['target-org'];
+    if (!org && flags['targetusername']) {
+      this.warn('--targetusername is deprecated. Use --target-org instead.');
+      org = flags['targetusername'];
+    }
 
     if (!flags['plauti-cloud-api-key']) {
       throw new Error('Parameter plauti-cloud-api-key is required.');

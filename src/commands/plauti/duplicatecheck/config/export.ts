@@ -32,11 +32,17 @@ export default class ExportConfig extends SfCommand<{ path: string }> {
   
   public static readonly examples = [
     '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json',
-    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json --poll-interval 10'
+    '<%= config.bin %> <%= command.id %> --target-org myOrg@example.com --file ./export/test_config.json --poll-interval 10',
+    '$ sfdx plauti:duplicatecheck:config:export --targetusername myOrg@example.com --file ./export/test_config.json'
   ];
 
   public static readonly flags = {
     'target-org': Flags.requiredOrg(),
+    // BC: Support legacy flag name
+    'targetusername': Flags.requiredOrg({
+      hidden: true,
+      deprecated: { message: 'Use --target-org instead' }
+    }),
     file: Flags.file({
       description: 'Export file path and name',
       required: true
@@ -56,7 +62,15 @@ export default class ExportConfig extends SfCommand<{ path: string }> {
 
   public async run(): Promise<{ path: string }> {
     const { flags } = await this.parse(ExportConfig);
-    const conn = (flags['target-org'] as any).getConnection();
+    
+    // BC: Support legacy targetusername flag
+    let targetOrg = flags['target-org'];
+    if (!targetOrg && flags['targetusername']) {
+      this.warn('--targetusername is deprecated. Use --target-org instead.');
+      targetOrg = flags['targetusername'];
+    }
+    
+    const conn = (targetOrg as any).getConnection();
     const filePath = flags.file as string;
 
     this.spinner.start('Downloading export file');
