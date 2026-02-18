@@ -338,7 +338,7 @@ This plugin follows modern Salesforce CLI standards:
 - **Modern Flags** - Uses `--target-org` with `-o` shorthand
 - **SF CLI Only** - Built exclusively for the modern Salesforce CLI
 - **Standard Architecture** - Follows `@salesforce/sf-plugins-core` patterns
-- **Comprehensive Testing** - 17 test cases validate all functionality
+- **Comprehensive Testing** - 91 tests across 19 suites validate all functionality
 
 ## Support
 
