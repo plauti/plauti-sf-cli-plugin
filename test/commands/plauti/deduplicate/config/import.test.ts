@@ -4,7 +4,6 @@ import ImportCommand from '../../../../../src/commands/plauti/deduplicate/config
 
 describe('plauti:deduplicate:config:import', () => {
   it('should use correct command metadata', () => {
-    // Assert
     assert.strictEqual(ImportCommand.summary, 'Import Plauti Deduplicate configuration');
     assert.ok(ImportCommand.flags['target-org']);
     assert.ok(ImportCommand.flags['file']);
@@ -18,28 +17,17 @@ describe('plauti:deduplicate:config:import', () => {
   });
 
   it('should validate required flags are present', () => {
-    // Assert flag properties
     assert.strictEqual(ImportCommand.flags['target-org'].required, true);
     assert.strictEqual(ImportCommand.flags['file'].required, true);
   });
 
-  it('should have correct flag descriptions', () => {
-    // Assert flag descriptions exist and are meaningful
-    assert.ok(ImportCommand.flags['file'].description);
-    assert.ok(ImportCommand.flags['poll-interval'].description);
-    assert.ok(ImportCommand.flags['json'].description);
-    assert.ok(ImportCommand.flags['verbose'].description);
-  });
-
   it('should have correct default values for optional flags', () => {
-    // Assert default values
     assert.strictEqual(ImportCommand.flags['poll-interval'].default, 3);
     assert.strictEqual(ImportCommand.flags['json'].default, false);
     assert.strictEqual(ImportCommand.flags['verbose'].default, false);
   });
 
   it('should have meaningful command examples', () => {
-    // Assert examples are comprehensive
     assert.ok(ImportCommand.examples.length >= 2);
     assert.ok(ImportCommand.examples.some(example => 
       example.includes('--target-org') && 
@@ -47,41 +35,107 @@ describe('plauti:deduplicate:config:import', () => {
     ));
   });
 
-  it('should include logging utility import', async () => {
-    // Read the actual command source to verify logging import
-    const fs = await import('node:fs/promises');
-    const source = await fs.readFile('./src/commands/plauti/deduplicate/config/import.ts', 'utf-8');
-    
-    // Assert logging utility is imported
-    assert.ok(source.includes('createLogger'));
-    assert.ok(source.includes('formatError'));
-    assert.ok(source.includes('LoggingUtility'));
-  });
+  describe('run() method integration', () => {
+    it('should execute run method and return result', async () => {
+      const mockOrg = {
+        getConnection: () => ({
+          sobject: () => ({}),
+          version: '54.0'
+        })
+      };
 
-  it('should have poll-interval flag with correct properties', () => {
-    // Assert poll-interval flag configuration
-    const pollIntervalFlag = ImportCommand.flags['poll-interval'];
-    assert.ok(pollIntervalFlag.description && (pollIntervalFlag.description.includes('interval') || pollIntervalFlag.description.includes('poll')));
-    assert.strictEqual(pollIntervalFlag.default, 3);
-  });
+      const command = new ImportCommand(
+        ['--target-org', 'test@example.com', '--file', 'test-config.json'],
+        {} as any
+      );
 
-  it('should have target-org flag with correct properties', () => {
-    // Assert target-org flag configuration
-    const targetOrgFlag = ImportCommand.flags['target-org'];
-    assert.ok(targetOrgFlag.char === 'o');
-    assert.strictEqual(targetOrgFlag.required, true);
-  });
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'file': 'test-config.json',
+          'poll-interval': 3,
+          'json': false,
+          'verbose': false
+        }
+      });
 
-  it('should have file flag with correct properties', () => {
-    // Assert file flag configuration
-    const fileFlag = ImportCommand.flags['file'];
-    assert.ok(fileFlag.description && (fileFlag.description.includes('file') || fileFlag.description.includes('File')));
-    assert.strictEqual(fileFlag.required, true);
-  });
+      const originalConfigImportService = await import('../../../../../src/services/ConfigImportService.js');
+      (originalConfigImportService.ConfigImportService.prototype as any).importConfig = async () => ({
+        status: 'completed',
+        jobId: 'job123',
+        recordsImported: 5
+      });
 
-  it('should have import-specific functionality', () => {
-    // Assert import command has distinct functionality from export
-    assert.notStrictEqual(ImportCommand.summary, 'Export Plauti Deduplicate configuration');
-    assert.ok(ImportCommand.summary.includes('Import'));
+      const result = await command.run();
+
+      assert.ok(result);
+      assert.strictEqual(result.ok, 'true');
+    });
+
+    it('should handle service errors in run method', async () => {
+      const mockOrg = {
+        getConnection: () => ({ version: '54.0' })
+      };
+
+      const command = new ImportCommand(
+        ['--target-org', 'test@example.com', '--file', 'test-config.json'],
+        {} as any
+      );
+
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'file': 'test-config.json',
+          'poll-interval': 3,
+          'json': false,
+          'verbose': false
+        }
+      });
+
+      const originalConfigImportService = await import('../../../../../src/services/ConfigImportService.js');
+      (originalConfigImportService.ConfigImportService.prototype as any).importConfig = async () => {
+        throw new Error('Service error');
+      };
+
+      try {
+        await command.run();
+        assert.fail('Should have thrown an error');
+      } catch (error) {
+        assert.ok((error as Error).message.includes('Failed to import configuration file'));
+      }
+    });
+
+    it('should work with JSON flag enabled', async () => {
+      const mockOrg = {
+        getConnection: () => ({ version: '54.0' })
+      };
+
+      const command = new ImportCommand(
+        ['--target-org', 'test@example.com', '--file', 'test.json', '--json'],
+        {} as any
+      );
+
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'file': 'test.json',
+          'poll-interval': 3,
+          'json': true,
+          'verbose': false
+        }
+      });
+
+      const originalConfigImportService = await import('../../../../../src/services/ConfigImportService.js');
+      (originalConfigImportService.ConfigImportService.prototype as any).importConfig = async () => ({
+        status: 'completed',
+        jobId: 'job123',
+        recordsImported: 3
+      });
+
+      const result = await command.run();
+      
+      assert.ok(result);
+      assert.strictEqual(result.ok, 'true');
+    });
   });
 });

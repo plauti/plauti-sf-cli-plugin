@@ -1,8 +1,11 @@
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
-import { Messages, Org } from '@salesforce/core';
+import { Messages } from '@salesforce/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
+import { SandboxManagementService } from '../../../../services/SandboxManagementService.js';
+import { PlautiCloudClientImpl } from '../../../../services/clients/PlautiCloudClient.js';
+import { OrgInfoClientImpl } from '../../../../services/clients/OrgInfoClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -57,21 +60,9 @@ export default class LinkSandbox extends SfCommand<{ status: string }> {
     
     this.logger = createLogger(flags);
     const spinnerLogger = this.logger.createSpinnerLogger();
-    
-    const org = flags['target-org'];
-
-    if (!flags['organization-id'] && !flags['sandbox-username']) {
-      throw new Error('Parameter organization-id or sandbox-username is required.');
-    }
 
     if (!flags['plauti-cloud-api-key']) {
       throw new Error('Parameter plauti-cloud-api-key is required.');
-    }
-
-    let sandboxOrgId = flags['organization-id'];
-    if (!sandboxOrgId) {
-      const sandboxOrg = await Org.create({ aliasOrUsername: flags['sandbox-username'] as string });
-      sandboxOrgId = sandboxOrg.getOrgId();
     }
 
     if (spinnerLogger.shouldShowSpinner) {
@@ -79,39 +70,44 @@ export default class LinkSandbox extends SfCommand<{ status: string }> {
     }
     
     try {
-      const fetch = (await import('node-fetch')).default;
-      const response = await fetch(`https://cloud.plauti.com/public-api/rest-v1/sandbox-license/${sandboxOrgId}/${(org as any).getOrgId()}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': flags['plauti-cloud-api-key'] as string,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: (org as any).getUsername(),
-          sandboxName: flags['sandbox-name']
-        })
-      });
+      // Create service with dependency injection
+      const plautiCloudClient = new PlautiCloudClientImpl();
+      const orgInfoClient = new OrgInfoClientImpl();
+      const sandboxService = new SandboxManagementService(plautiCloudClient, orgInfoClient);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Execute sandbox link business logic
+      const linkParams: any = {
+        org: flags['target-org'],
+        sandboxName: flags['sandbox-name'],
+        plautiCloudApiKey: flags['plauti-cloud-api-key']
+      };
+
+      if (flags['organization-id']) {
+        linkParams.organizationId = flags['organization-id'];
       }
+
+      if (flags['sandbox-username']) {
+        linkParams.sandboxUsername = flags['sandbox-username'];
+      }
+
+      const result = await sandboxService.linkSandbox(linkParams);
 
       if (spinnerLogger.shouldShowSpinner) {
         this.spinner.stop('Done!');
       }
+
+      if (flags.json) {
+        this.logger.json({ status: result.status });
+      }
+
+      return {
+        status: result.status
+      };
     } catch (error) {
       if (spinnerLogger.shouldShowSpinner) {
         this.spinner.stop('Failed!');
       }
       throw new Error(formatError('link sandbox', `${error}`));
     }
-
-    if (flags.json) {
-      this.logger.json({ status: 'done' });
-    }
-
-    return {
-      status: 'done'
-    };
   }
 }

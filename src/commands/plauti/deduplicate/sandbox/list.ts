@@ -3,6 +3,9 @@ import { Messages } from '@salesforce/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
+import { SandboxManagementService } from '../../../../services/SandboxManagementService.js';
+import { PlautiCloudClientImpl } from '../../../../services/clients/PlautiCloudClient.js';
+import { OrgInfoClientImpl } from '../../../../services/clients/OrgInfoClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,8 +47,6 @@ export default class ListSandbox extends SfCommand<{ status: string; sandboxes: 
     
     this.logger = createLogger(flags);
     const spinnerLogger = this.logger.createSpinnerLogger();
-    
-    const org = flags['target-org'];
 
     if (!flags['plauti-cloud-api-key']) {
       throw new Error('Parameter plauti-cloud-api-key is required.');
@@ -54,41 +55,38 @@ export default class ListSandbox extends SfCommand<{ status: string; sandboxes: 
     if (spinnerLogger.shouldShowSpinner) {
       this.spinner.start('Getting linked sandboxes');
     }
-    let content = null;
 
     try {
-      const fetch = (await import('node-fetch')).default;
-      const response = await fetch(`https://cloud.plauti.com/public-api/rest-v1/sandbox-license/${(org as any).getOrgId()}`, {
-        headers: {
-          Authorization: flags['plauti-cloud-api-key'] as string
-        }
+      // Create service with dependency injection
+      const plautiCloudClient = new PlautiCloudClientImpl();
+      const orgInfoClient = new OrgInfoClientImpl();
+      const sandboxService = new SandboxManagementService(plautiCloudClient, orgInfoClient);
+
+      // Execute sandbox list business logic
+      const result = await sandboxService.listSandboxes({
+        org: flags['target-org'] as any,
+        plautiCloudApiKey: flags['plauti-cloud-api-key'] as string
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      content = await response.json();
       
       if (flags.json) {
-        this.logger.json({ status: 'done', sandboxes: content });
+        this.logger.json({ status: result.status, sandboxes: result.sandboxes });
       } else {
-        this.logger.info(JSON.stringify(content, null, 2));
+        this.logger.info(JSON.stringify(result.sandboxes, null, 2));
       }
       
       if (spinnerLogger.shouldShowSpinner) {
         this.spinner.stop('Done!');
       }
+
+      return {
+        status: result.status,
+        sandboxes: result.sandboxes
+      };
     } catch (error) {
       if (spinnerLogger.shouldShowSpinner) {
         this.spinner.stop('Failed!');
       }
       throw new Error(formatError('get linked sandboxes', `${error}`));
     }
-
-    return {
-      status: 'done',
-      sandboxes: content
-    };
   }
 }

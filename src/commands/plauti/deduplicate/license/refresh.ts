@@ -3,6 +3,8 @@ import { Messages } from '@salesforce/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
+import { LicenseService } from '../../../../services/LicenseService.js';
+import { LicenseClientImpl } from '../../../../services/clients/LicenseClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -42,30 +44,38 @@ export default class Refresh extends SfCommand<{ status: string }> {
     const spinnerLogger = this.logger.createSpinnerLogger();
 
     const targetOrg = flags['target-org'];
-    const conn = (targetOrg as any).getConnection();
+    const connection = (targetOrg as any).getConnection();
 
     if (spinnerLogger.shouldShowSpinner) {
       this.spinner.start('Refreshing Plauti Deduplicate for Salesforce license');
     }
     
     try {
-      await conn.apex.post('/dupcheck/dc3Api/admin/refresh-license', {});
+      // Create service with dependency injection
+      const licenseClient = new LicenseClientImpl();
+      const licenseService = new LicenseService(licenseClient);
+
+      // Execute license refresh business logic
+      const result = await licenseService.refreshLicense({
+        connection
+      });
+
       if (spinnerLogger.shouldShowSpinner) {
         this.spinner.stop('Done!');
       }
+
+      if (flags.json) {
+        this.logger.json({ status: result.status });
+      }
+
+      return {
+        status: result.status
+      };
     } catch (error) {
       if (spinnerLogger.shouldShowSpinner) {
         this.spinner.stop('Failed!');
       }
       throw new Error(formatError('refresh Plauti Deduplicate for Salesforce license', `${error}`));
     }
-
-    if (flags.json) {
-      this.logger.json({ status: 'done' });
-    }
-
-    return {
-      status: 'done'
-    };
   }
 }

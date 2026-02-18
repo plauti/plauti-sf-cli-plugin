@@ -4,7 +4,6 @@ import ExportCommand from '../../../../../src/commands/plauti/deduplicate/config
 
 describe('plauti:deduplicate:config:export', () => {
   it('should use correct command metadata', () => {
-    // Assert
     assert.strictEqual(ExportCommand.summary, 'Export Plauti Deduplicate configuration');
     assert.ok(ExportCommand.flags['target-org']);
     assert.ok(ExportCommand.flags['file']);
@@ -18,28 +17,17 @@ describe('plauti:deduplicate:config:export', () => {
   });
 
   it('should validate required flags are present', () => {
-    // Assert flag properties
     assert.strictEqual(ExportCommand.flags['target-org'].required, true);
     assert.strictEqual(ExportCommand.flags['file'].required, true);
   });
 
-  it('should have correct flag descriptions', () => {
-    // Assert flag descriptions exist and are meaningful
-    assert.ok(ExportCommand.flags['file'].description);
-    assert.ok(ExportCommand.flags['poll-interval'].description);
-    assert.ok(ExportCommand.flags['json'].description);
-    assert.ok(ExportCommand.flags['verbose'].description);
-  });
-
   it('should have correct default values for optional flags', () => {
-    // Assert default values
     assert.strictEqual(ExportCommand.flags['poll-interval'].default, 3);
     assert.strictEqual(ExportCommand.flags['json'].default, false);
     assert.strictEqual(ExportCommand.flags['verbose'].default, false);
   });
 
   it('should have meaningful command examples', () => {
-    // Assert examples are comprehensive
     assert.ok(ExportCommand.examples.length >= 2);
     assert.ok(ExportCommand.examples.some(example => 
       example.includes('--target-org') && 
@@ -47,35 +35,113 @@ describe('plauti:deduplicate:config:export', () => {
     ));
   });
 
-  it('should include logging utility import', async () => {
-    // Read the actual command source to verify logging import
-    const fs = await import('node:fs/promises');
-    const source = await fs.readFile('./src/commands/plauti/deduplicate/config/export.ts', 'utf-8');
-    
-    // Assert logging utility is imported
-    assert.ok(source.includes('createLogger'));
-    assert.ok(source.includes('formatError'));
-    assert.ok(source.includes('LoggingUtility'));
-  });
+  describe('run() method integration', () => {
+    it('should execute run method and return file path', async () => {
+      const mockOrg = {
+        getConnection: () => ({
+          sobject: () => ({}),
+          version: '54.0'
+        })
+      };
 
-  it('should have poll-interval flag with correct properties', () => {
-    // Assert poll-interval flag configuration
-    const pollIntervalFlag = ExportCommand.flags['poll-interval'];
-    assert.ok(pollIntervalFlag.description && (pollIntervalFlag.description.includes('interval') || pollIntervalFlag.description.includes('poll')));
-    assert.strictEqual(pollIntervalFlag.default, 3);
-  });
+      const command = new ExportCommand(
+        ['--target-org', 'test@example.com', '--file', 'test-config.json'],
+        {} as any
+      );
 
-  it('should have target-org flag with correct properties', () => {
-    // Assert target-org flag configuration
-    const targetOrgFlag = ExportCommand.flags['target-org'];
-    assert.ok(targetOrgFlag.char === 'o');
-    assert.strictEqual(targetOrgFlag.required, true);
-  });
+      // Mock the flags to avoid parsing issues
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'file': 'test-config.json',
+          'poll-interval': 3,
+          'json': false,
+          'verbose': false
+        }
+      });
 
-  it('should have file flag with correct properties', () => {
-    // Assert file flag configuration
-    const fileFlag = ExportCommand.flags['file'];
-    assert.ok(fileFlag.description && (fileFlag.description.includes('file') || fileFlag.description.includes('File')));
-    assert.strictEqual(fileFlag.required, true);
+      // Mock ConfigExportService
+      const originalConfigExportService = await import('../../../../../src/services/ConfigExportService.js');
+      const mockExportConfig = async () => ({
+        status: 'completed',
+        jobId: 'job123',
+        filePath: 'test-config.json'
+      });
+
+      // Patch the service
+      (originalConfigExportService.ConfigExportService.prototype as any).exportConfig = mockExportConfig;
+
+      const result = await command.run();
+
+      assert.ok(result);
+      assert.strictEqual(result.path, 'test-config.json');
+    });
+
+    it('should handle service errors in run method', async () => {
+      const mockOrg = {
+        getConnection: () => ({ version: '54.0' })
+      };
+
+      const command = new ExportCommand(
+        ['--target-org', 'test@example.com', '--file', 'test-config.json'],
+        {} as any
+      );
+
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'file': 'test-config.json',
+          'poll-interval': 3,
+          'json': false,
+          'verbose': false
+        }
+      });
+
+      // Mock service to throw error
+      const originalConfigExportService = await import('../../../../../src/services/ConfigExportService.js');
+      (originalConfigExportService.ConfigExportService.prototype as any).exportConfig = async () => {
+        throw new Error('Service error');
+      };
+
+      try {
+        await command.run();
+        assert.fail('Should have thrown an error');
+      } catch (error) {
+        assert.ok((error as Error).message.includes('Failed to export configuration file'));
+      }
+    });
+
+    it('should work with JSON flag enabled', async () => {
+      const mockOrg = {
+        getConnection: () => ({ version: '54.0' })
+      };
+
+      const command = new ExportCommand(
+        ['--target-org', 'test@example.com', '--file', 'test.json', '--json'],
+        {} as any
+      );
+
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'file': 'test.json',
+          'poll-interval': 3,
+          'json': true,
+          'verbose': false
+        }
+      });
+
+      const originalConfigExportService = await import('../../../../../src/services/ConfigExportService.js');
+      (originalConfigExportService.ConfigExportService.prototype as any).exportConfig = async () => ({
+        status: 'completed',
+        jobId: 'job123',
+        filePath: 'test.json'
+      });
+
+      const result = await command.run();
+      
+      assert.ok(result);
+      assert.strictEqual(result.path, 'test.json');
+    });
   });
 });

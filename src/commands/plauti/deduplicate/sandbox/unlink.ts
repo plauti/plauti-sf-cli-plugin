@@ -3,6 +3,9 @@ import { Messages } from '@salesforce/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
+import { SandboxManagementService } from '../../../../services/SandboxManagementService.js';
+import { PlautiCloudClientImpl } from '../../../../services/clients/PlautiCloudClient.js';
+import { OrgInfoClientImpl } from '../../../../services/clients/OrgInfoClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -48,8 +51,6 @@ export default class UnlinkSandbox extends SfCommand<{ status: string }> {
     
     this.logger = createLogger(flags);
     const spinnerLogger = this.logger.createSpinnerLogger();
-    
-    const org = flags['target-org'];
 
     if (!flags['organization-id']) {
       throw new Error('Parameter organization-id is required.');
@@ -64,34 +65,34 @@ export default class UnlinkSandbox extends SfCommand<{ status: string }> {
     }
     
     try {
-      const fetch = (await import('node-fetch')).default;
-      const response = await fetch(`https://cloud.plauti.com/public-api/rest-v1/sandbox-license/${flags['organization-id']}/${(org as any).getOrgId()}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': flags['plauti-cloud-api-key'] as string
-        }
-      });
+      // Create service with dependency injection
+      const plautiCloudClient = new PlautiCloudClientImpl();
+      const orgInfoClient = new OrgInfoClientImpl();
+      const sandboxService = new SandboxManagementService(plautiCloudClient, orgInfoClient);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+      // Execute sandbox unlink business logic
+      const result = await sandboxService.unlinkSandbox({
+        org: flags['target-org'] as any,
+        organizationId: flags['organization-id'] as string,
+        plautiCloudApiKey: flags['plauti-cloud-api-key'] as string
+      });
 
       if (spinnerLogger.shouldShowSpinner) {
         this.spinner.stop('Done!');
       }
+
+      if (flags.json) {
+        this.logger.json({ status: result.status });
+      }
+
+      return {
+        status: result.status
+      };
     } catch (error) {
       if (spinnerLogger.shouldShowSpinner) {
         this.spinner.stop('Failed!');
       }
       throw new Error(formatError('unlink sandbox', `${error}`));
     }
-
-    if (flags.json) {
-      this.logger.json({ status: 'done' });
-    }
-
-    return {
-      status: 'done'
-    };
   }
 }

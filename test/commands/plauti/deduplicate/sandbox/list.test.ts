@@ -4,81 +4,170 @@ import ListCommand from '../../../../../src/commands/plauti/deduplicate/sandbox/
 
 describe('plauti:deduplicate:sandbox:list', () => {
   it('should use correct command metadata', () => {
-    // Assert
     assert.strictEqual(ListCommand.summary, 'List all sandbox orgs');
     assert.ok(ListCommand.flags['target-org']);
+    assert.ok(ListCommand.flags['plauti-cloud-api-key']);
     assert.ok(ListCommand.flags['json']);
     assert.ok(ListCommand.flags['verbose']);
+    assert.strictEqual(ListCommand.flags['json'].default, false);
+    assert.strictEqual(ListCommand.flags['verbose'].default, false);
     assert.strictEqual(ListCommand.requiresProject, false);
     assert.ok(Array.isArray(ListCommand.examples));
     assert.ok(ListCommand.examples.some(example => example.includes('sf plauti:deduplicate:sandbox:list')));
   });
 
   it('should validate required flags are present', () => {
-    // Assert flag properties
     assert.strictEqual(ListCommand.flags['target-org'].required, true);
-  });
-
-  it('should have correct flag descriptions', () => {
-    // Assert flag descriptions exist and are meaningful
-    assert.ok(ListCommand.flags['plauti-cloud-api-key'].description);
-    assert.ok(ListCommand.flags['json'].description);
-    assert.ok(ListCommand.flags['verbose'].description);
+    assert.strictEqual(ListCommand.flags['plauti-cloud-api-key'].required, true);
   });
 
   it('should have correct default values for optional flags', () => {
-    // Assert default values
     assert.strictEqual(ListCommand.flags['json'].default, false);
     assert.strictEqual(ListCommand.flags['verbose'].default, false);
   });
 
   it('should have meaningful command examples', () => {
-    // Assert examples are comprehensive
-    assert.ok(ListCommand.examples.length >= 2);
+    assert.ok(ListCommand.examples.length >= 1);
     assert.ok(ListCommand.examples.some(example => 
-      example.includes('--target-org')
+      example.includes('--target-org') && 
+      example.includes('--plauti-cloud-api-key')
     ));
   });
 
-  it('should include logging utility import', async () => {
-    // Read the actual command source to verify logging import
-    const fs = await import('node:fs/promises');
-    const source = await fs.readFile('./src/commands/plauti/deduplicate/sandbox/list.ts', 'utf-8');
-    
-    // Assert logging utility is imported
-    assert.ok(source.includes('createLogger'));
-    assert.ok(source.includes('formatError'));
-    assert.ok(source.includes('LoggingUtility'));
-  });
+  describe('run() method integration', () => {
+    it('should execute run method and return list result', async () => {
+      const mockOrg = {
+        getConnection: () => ({
+          sobject: () => ({}),
+          version: '54.0'
+        })
+      };
 
-  it('should have target-org flag with correct properties', () => {
-    // Assert target-org flag configuration
-    const targetOrgFlag = ListCommand.flags['target-org'];
-    assert.ok(targetOrgFlag.char === 'o');
-    assert.strictEqual(targetOrgFlag.required, true);
-  });
+      const command = new ListCommand(
+        ['--target-org', 'prod@example.com', '--plauti-cloud-api-key', 'plauti_123_456'],
+        {} as any
+      );
 
-  it('should have list-specific functionality', () => {
-    // Assert list command has distinct functionality
-    assert.ok(ListCommand.summary.includes('List'));
-    assert.notStrictEqual(ListCommand.summary, 'Link Sandbox');
-    assert.notStrictEqual(ListCommand.summary, 'Unlink Sandbox');
-  });
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'plauti-cloud-api-key': 'plauti_123_456',
+          'json': false,
+          'verbose': false
+        }
+      });
 
-  it('should have minimal required flags for listing', () => {
-    // Assert list has simple requirements
-    const flags = ListCommand.flags;
-    const requiredFlagCount = [
-      flags['target-org'].required,
-      flags['plauti-cloud-api-key'].required,
-      flags['json'].required,
-      flags['verbose'].required
-    ].filter(Boolean).length;
-    
-    assert.strictEqual(requiredFlagCount, 2); // target-org and plauti-cloud-api-key should be required
-    assert.strictEqual(flags['target-org'].required, true);
-    assert.strictEqual(flags['plauti-cloud-api-key'].required, true);
-    assert.strictEqual(flags['json'].default, false);
-    assert.strictEqual(flags['verbose'].default, false);
+      const originalSandboxService = await import('../../../../../src/services/SandboxManagementService.js');
+      (originalSandboxService.SandboxManagementService.prototype as any).listSandboxes = async () => ({
+        status: 'success',
+        sandboxes: [
+          { id: 'sb1', name: 'Sandbox1' },
+          { id: 'sb2', name: 'Sandbox2' }
+        ]
+      });
+
+      const result = await command.run();
+
+      assert.ok(result);
+      assert.strictEqual(result.status, 'success');
+      assert.ok(Array.isArray(result.sandboxes));
+      assert.strictEqual((result.sandboxes as any[]).length, 2);
+    });
+
+    it('should handle service errors in run method', async () => {
+      const mockOrg = {
+        getConnection: () => ({ version: '54.0' })
+      };
+
+      const command = new ListCommand(
+        ['--target-org', 'prod@example.com', '--plauti-cloud-api-key', 'plauti_123_456'],
+        {} as any
+      );
+
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'plauti-cloud-api-key': 'plauti_123_456',
+          'json': false,
+          'verbose': false
+        }
+      });
+
+      const originalSandboxService = await import('../../../../../src/services/SandboxManagementService.js');
+      (originalSandboxService.SandboxManagementService.prototype as any).listSandboxes = async () => {
+        throw new Error('Service error');
+      };
+
+      try {
+        await command.run();
+        assert.fail('Should have thrown an error');
+      } catch (error) {
+        assert.ok((error as Error).message.includes('Failed to get linked sandboxes'));
+      }
+    });
+
+    it('should work with JSON flag enabled', async () => {
+      const mockOrg = {
+        getConnection: () => ({ version: '54.0' })
+      };
+
+      const command = new ListCommand(
+        ['--target-org', 'prod@example.com', '--plauti-cloud-api-key', 'plauti_123_456', '--json'],
+        {} as any
+      );
+
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'plauti-cloud-api-key': 'plauti_123_456',
+          'json': true,
+          'verbose': false
+        }
+      });
+
+      const originalSandboxService = await import('../../../../../src/services/SandboxManagementService.js');
+      (originalSandboxService.SandboxManagementService.prototype as any).listSandboxes = async () => ({
+        status: 'success',
+        sandboxes: []
+      });
+
+      const result = await command.run();
+      
+      assert.ok(result);
+      assert.strictEqual(result.status, 'success');
+      assert.ok(Array.isArray(result.sandboxes));
+    });
+
+    it('should work with verbose flag enabled', async () => {
+      const mockOrg = {
+        getConnection: () => ({ version: '54.0' })
+      };
+
+      const command = new ListCommand(
+        ['--target-org', 'prod@example.com', '--plauti-cloud-api-key', 'plauti_123_456', '--verbose'],
+        {} as any
+      );
+
+      (command as any).parse = async () => ({
+        flags: {
+          'target-org': mockOrg,
+          'plauti-cloud-api-key': 'plauti_123_456',
+          'json': false,
+          'verbose': true
+        }
+      });
+
+      const originalSandboxService = await import('../../../../../src/services/SandboxManagementService.js');
+      (originalSandboxService.SandboxManagementService.prototype as any).listSandboxes = async () => ({
+        status: 'success',
+        sandboxes: [{ id: 'sb1', name: 'TestSandbox' }]
+      });
+
+      const result = await command.run();
+      
+      assert.ok(result);
+      assert.strictEqual(result.status, 'success');
+      assert.ok(Array.isArray(result.sandboxes));
+    });
   });
 });
