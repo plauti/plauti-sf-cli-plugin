@@ -10,6 +10,10 @@ $ sf plauti:deduplicate:config:export --target-org myorg --file config.json
 $ sf plauti:deduplicate:sandbox:link --target-org myorg --organization-id 00D... --plauti-cloud-api-key key
 ```
 
+## 🔄 Migrating from Old Plugin?
+
+If you're upgrading from the old `plauti-sfdx` package (which used `plauti:duplicatecheck:*` commands), see our [Migration Guide](MIGRATION-GUIDE.md) for a complete transition guide.
+
 [![Version](https://img.shields.io/npm/v/plauti-sf-cli-plugin.svg)](https://npmjs.org/package/plauti-sf-cli-plugin)
 [![License](https://img.shields.io/npm/l/plauti-sf-cli-plugin.svg)](https://github.com/plauti/plauti-sf-cli-plugin/blob/main/package.json)
 

@@ -1,6 +1,6 @@
 # Migration Guide: Plauti Duplicate Check → Plauti Deduplicate
 
-This guide helps you migrate from the old `plauti:duplicatecheck:*` commands to the new `plauti:deduplicate:*` commands.
+This guide helps you migrate from the old `plauti-sfdx` package (with `plauti:duplicatecheck:*` commands) to the new `plauti-sf-cli-plugin` package (with `plauti:deduplicate:*` commands).
 
 ## Quick Command Reference
 
@@ -14,18 +14,33 @@ This guide helps you migrate from the old `plauti:duplicatecheck:*` commands to 
 | `sf plauti:duplicatecheck:sandbox:list` | `sf plauti:deduplicate:sandbox:list` |
 | `sf plauti:duplicatecheck:sandbox:unlink` | `sf plauti:deduplicate:sandbox:unlink` |
 
+## Package Name Changes
+
+### Old Package
+```bash
+sf plugins install plauti-sfdx
+```
+
+### New Package  
+```bash
+sf plugins install plauti-sf-cli-plugin
+```
+
+**Important:** If you have the old `plauti-sfdx` package installed, you should uninstall it first:
+```bash
+sf plugins uninstall plauti-sfdx
+```
+
 ## Installation Changes
 
-### Old Installation
+### Complete Migration Steps
 ```bash
-sf plugins install plauti-sf-cli-plugin
-```
+# 1. Uninstall old package
+sf plugins uninstall plauti-sfdx
 
-### New Installation  
-```bash
+# 2. Install new package
 sf plugins install plauti-sf-cli-plugin
 ```
-*Note: Same package name, but updated internally with new command structure*
 
 ## Command Flag Changes
 
