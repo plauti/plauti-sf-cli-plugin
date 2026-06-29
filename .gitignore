@@ -11,3 +11,4 @@ node_modules
 /.project
 /export/
 .idea
+oclif.manifest.json

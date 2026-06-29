@@ -1,253 +1,345 @@
 # Plauti Salesforce CLI Plugin
-This is a plugin for Salesforce it's SF CLI, that extends its functionality to also be able to use it to interact with Plauti products such as Duplicate Check. 
 
-## ⚠️ IMPORTANT: Migrating from SFDX to SF CLI
-- Salesforce has recently deprecated the SFDX Command Line application in favor of the Salesforce CLI. To properly use our command line plugin, please migrate from SFDX to SF CLI, as recommended by Salesforce.
-- Please find the migration instructions here: [Installation instructions SF CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_move_to_sf_v2.htm)
-- If you are currently using SFDX (You are if any of the terminal commands you use start with `sfdx`) please make sure to remove it ([removal instructions](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_uninstall.htm))
-- Plauti Salesforce CLI Plugin is compatible with the new Salesforce CLI.
+This is a plugin for Salesforce SF CLI, that extends its functionality to also be able to use it to interact with Plauti products such as Plauti Deduplicate.
+
+## 🎯 Plauti Deduplicate Commands
+
+```bash
+$ sf plauti:deduplicate:license:refresh --target-org myorg
+$ sf plauti:deduplicate:config:export --target-org myorg --file config.json
+$ sf plauti:deduplicate:sandbox:link --target-org myorg --organization-id 00D... --plauti-cloud-api-key key
+```
+
+## 🔄 Migrating from Old Plugin?
+
+If you're upgrading from the old `plauti-sfdx` package (which used `plauti:duplicatecheck:*` commands), see our [Migration Guide](MIGRATION-GUIDE.md) for a complete transition guide.
+
+[![Version](https://img.shields.io/npm/v/plauti-sf-cli-plugin.svg)](https://npmjs.org/package/plauti-sf-cli-plugin)
+[![License](https://img.shields.io/npm/l/plauti-sf-cli-plugin.svg)](https://github.com/plauti/plauti-sf-cli-plugin/blob/main/package.json)
+
+## ⚠️ IMPORTANT: SF CLI Required
+
+- This plugin requires Salesforce SF CLI. 
+- Please find the installation instructions here: [Installation instructions SF CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm)
 
 ## 🛠️ Prerequisites to use Plauti Salesforce CLI Plugin
-- Please make sure Node 18 or higher is installed on your machine [Downloading NodeJS](https://nodejs.org/en)
+
+- Please make sure Node.js 24 or higher is installed on your machine [Downloading NodeJS](https://nodejs.org/en)
 - Please make sure SF CLI is installed on your machine [Installing SF CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm)
-- If you have previously used SFDX (Former CLI, deprecated by Salesforce), please uninstall it [Removing SFDX]([https://nodejs.org/en](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_uninstall.htm))
 
 ## Installing Plauti Salesforce CLI Plugin
-- Please make sure your machine complies with the above prequisites before you get started.
+
+- Please make sure your machine complies with the above prerequisites before you get started.
 - Type the following command in your terminal and hit `Enter`:
+  ```bash
+  sf plugins install plauti-sf-cli-plugin
   ```
-  sf plugins install plauti-sfdx
-  ```
-- You'll see a prompt asking you if you want to install a plugin that is not from Salesforce, since this plugin is maintained by Plauti. Please confirm by typing `y` (for Yes) and hit `Enter`. 
+- You'll see a prompt asking you if you want to install a plugin that is not from Salesforce, since this plugin is maintained by Plauti. Please confirm by typing `y` (for Yes) and hit `Enter`.
 - Wait for the installation to complete.
 
-A common error during installation is `The engine "node" is incompatible with this module.` this means you are not running Node 18 or higher. If you did install Node 18, you may still have an older version on your machine that is in use. Please remove any older version of node or use a more advanced tool like [NVM](https://github.com/nvm-sh/nvm) to switch between node versions.
-After making sure the correct Node version is being used, execute the installation process again. 
+### Common Installation Issues
+
+A common error during installation is `The engine "node" is incompatible with this module.` this means you are not running Node.js 24 or higher. If you did install Node.js 24, you may still have an older version on your machine that is in use. Please remove any older version of node or use a more advanced tool like [NVM](https://github.com/nvm-sh/nvm) to switch between node versions.
+After making sure the correct Node version is being used, execute the installation process again.
+
+Or install from source for development:
+
+```bash
+git clone https://github.com/plauti/plauti-sf-cli-plugin.git
+cd plauti-sf-cli-plugin
+npm install
+sf plugins link .
+```
 
 ## Authenticating SF CLI with the desired Salesforce Org
+
 - SF CLI needs to be linked to the Salesforce Org you want to perform any of the Plauti CLI Plugin commands on
 - Extensive instructions on how to link a Salesforce Org to SF CLI are provided by Salesforce [SF CLI Login instructions](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_auth_web_flow.htm)
-```
+
+```bash
 sf org login web --alias my-org
 ```
+
 Note: the alias you choose here after the `--alias` parameter, is the same you will use to tell Plauti Salesforce CLI Plugin which org it should use, so pick an alias that you can easily remember and distinguish.
 Running the command above will open your browser and ask you to login to the Salesforce org you want to connect to. After logging in, check back in the terminal to see if the login went correctly.
 
 ## Plauti CLI Command Reference
-After installing the SF CLI, the Plauti Salesforce CLI Plugin, and authenticating SF CLI with a Salesforce org as described above, you are able to make use of the following Plauti CLI commands. 
 
+After installing the SF CLI, the Plauti Salesforce CLI Plugin, and authenticating SF CLI with a Salesforce org as described above, you are able to make use of the following Plauti CLI commands.
 
+### License Management
 
-### Export Duplicate Check Config
-Export Plauti Duplicate Check configuration
+#### `sf plauti:deduplicate:license:refresh`
 
-```
-USAGE
-  $ sf plauti duplicatecheck config export --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion 
-  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -u                                                                                username or alias for the target
-
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --file=file                                                                       (required) Export file path and name
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --pollinterval=pollinterval                                                       [default: 3] Poll interval in
-                                                                                    seconds
-
-EXAMPLES
-  $ sf plauti duplicatecheck config export -u myOrg@example.com --file ./export/test_config.json
-  $ sf plauti duplicatecheck config export -u myOrg@example.com --file ./export/test_config.json 
-  --pollinterval 10
-```
-
-### Import Duplicate Check Config
-Import Plauti Duplicate Check configuration
+Refresh your Plauti Deduplicate for Salesforce license.
 
 ```
 USAGE
-  $ sf plauti duplicatecheck config import --file <filepath> [--pollinterval <integer>] [-u <string>] [--apiversion 
-  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -u                                                                                username or alias for the target
-
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --file=file                                                                       (required) File path
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --pollinterval=pollinterval                                                       [default: 3] Poll interval in
-                                                                                    seconds
-
-EXAMPLES
-  $ sf plauti duplicatecheck config import -u myOrg@example.com --file ./export/test_config.json
-  $ sf plauti duplicatecheck config import -u myOrg@example.com --file ./export/test_config.json 
-  --pollinterval 10
-```
-
-### Create a Duplicate Check Job from a CSV File
-Create A Plauti Duplicate Check Job based on a CSV File
-
-```
-USAGE
-  $ sf plauti duplicatecheck csv tojob --file <filepath> --sourceobject <string> --matchobject <string> 
-  [--setmasterformerge] [--delimiter <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel 
+  $ sf plauti:deduplicate:license:refresh [--target-org <string>] [--apiversion <string>] [--json] [--loglevel 
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -u                                                                                username or alias for the target
-
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --delimiter=delimiter                                                             [default: ,] Csv Delimiter
-
-  --file=file                                                                       (required) Csv file path
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --matchobject=matchobject                                                         (required) Match Object Prefix
-
-  --setmasterformerge                                                               Set Master record for Merge
-
-  --sourceobject=sourceobject                                                       (required) Source Object Prefix
+  -o, --target-org=target-org                                                      username or alias for the target org
+  --apiversion=apiversion                                                          override the api version used for
+                                                                                   api requests made by this command
+  --json                                                                           format output as json
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
+                                                                                   this command invocation
 
 EXAMPLES
-  $ sf plauti duplicatecheck csv tojob -u myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 
-  --matchobject 001
-  $ sf plauti duplicatecheck csv tojob -u myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 
-  --matchobject 001 --setmasterformerge
+  $ sf plauti:deduplicate:license:refresh --target-org myOrg@example.com
+  $ sf plauti:deduplicate:license:refresh -o myOrg@example.com
 ```
 
-### Refresh Duplicate Check License
-Refresh Duplicate Check for Salesforce license
+### Configuration Management
+
+#### `sf plauti:deduplicate:config:export`
+
+Export Plauti Deduplicate configuration to a file.
 
 ```
 USAGE
-  $ sf plauti duplicatecheck license refresh [-u <string>] [--apiversion <string>] [--json] [--loglevel 
+  $ sf plauti:deduplicate:config:export --file <filepath> [--pollinterval <integer>] [--target-org <string>] 
+  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -o, --target-org=target-org                                                      username or alias for the target org
+  --apiversion=apiversion                                                          override the api version used for
+                                                                                   api requests made by this command
+  --file=file                                                                      (required) Export file path and name
+  --json                                                                           format output as json
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
+                                                                                   this command invocation
+  --pollinterval=pollinterval                                                      [default: 3] Poll interval in
+                                                                                   seconds
+
+EXAMPLES
+  $ sf plauti:deduplicate:config:export --target-org myOrg@example.com --file ./export/test_config.json
+  $ sf plauti:deduplicate:config:export -o myOrg@example.com --file ./export/test_config.json
+```
+
+#### `sf plauti:deduplicate:config:import`
+
+Import Plauti Deduplicate configuration from a file.
+
+```
+USAGE
+  $ sf plauti:deduplicate:config:import --file <filepath> [--pollinterval <integer>] [--target-org <string>] 
+  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -o, --target-org=target-org                                                      username or alias for the target org
+  --apiversion=apiversion                                                          override the api version used for
+                                                                                   api requests made by this command
+  --file=file                                                                      (required) File path
+  --json                                                                           format output as json
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
+                                                                                   this command invocation
+  --pollinterval=pollinterval                                                      [default: 3] Poll interval in
+                                                                                   seconds
+
+EXAMPLES
+  $ sf plauti:deduplicate:config:import --target-org myOrg@example.com --file ./export/test_config.json
+  $ sf plauti:deduplicate:config:import -o myOrg@example.com --file ./export/test_config.json
+```
+
+### Data Processing
+
+#### `sf plauti:deduplicate:csv:tojob`
+
+Create a Plauti Deduplicate job from a CSV file containing potential duplicates.
+
+```
+USAGE
+  $ sf plauti:deduplicate:csv:tojob --file <filepath> --sourceobject <string> --matchobject <string> 
+  [--setmasterformerge] [--delimiter <string>] [--target-org <string>] [--apiversion <string>] [--json] [--loglevel 
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -u                                                                                username or alias for the target
+  -o, --target-org=target-org                                                      username or alias for the target org
+  --apiversion=apiversion                                                          override the api version used for
+                                                                                   api requests made by this command
+  --delimiter=delimiter                                                            [default: ,] Csv Delimiter
+  --file=file                                                                      (required) Csv file path
+  --json                                                                           format output as json
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
+                                                                                   this command invocation
+  --matchobject=matchobject                                                        (required) Match Object Prefix
+  --setmasterformerge                                                              Set Master record for Merge
+  --sourceobject=sourceobject                                                      (required) Source Object Prefix
 
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-EXAMPLE
-  $ sf plauti duplicatecheck license refresh -u myOrg@example.com
+EXAMPLES
+  $ sf plauti:deduplicate:csv:tojob --target-org myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001
+  $ sf plauti:deduplicate:csv:tojob -o myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001
 ```
 
-### Link a Sandbox org to Production
-Link Sandbox to Production
+**CSV Format:**
+```csv
+master,duplicate
+0011234567890123,0011234567890456
+0011234567890123,0011234567890789
+```
+
+### Sandbox Management
+
+#### `sf plauti:deduplicate:sandbox:link`
+
+Link a sandbox organization to production for license sharing.
 
 ```
 USAGE
-  $ sf plauti duplicatecheck sandbox link --sandboxname <string> --plauticloudapikey <string> [--organizationid 
-  <string>] [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel 
+  $ sf plauti:deduplicate:sandbox:link --sandbox-name <string> --plauti-cloud-api-key <string> [--organization-id 
+  <string>] [--sandbox-username <string>] [--target-org <string>] [--apiversion <string>] [--json] [--loglevel 
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -u                                                                                username or alias for the target
-
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --organizationid=organizationid                                                   Sandbox Organization Id
-
-  --plauticloudapikey=plauticloudapikey                                             (required) Plauti Cloud Api Key
-
-  --sandboxname=sandboxname                                                         (required) Sandbox Name
-
-  --sandboxusername=sandboxusername                                                 Sandbox User Name
+  -o, --target-org=target-org                                                      username or alias for the target org
+  --apiversion=apiversion                                                          override the api version used for
+                                                                                   api requests made by this command
+  --json                                                                           format output as json
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
+                                                                                   this command invocation
+  --organization-id=organization-id                                                Sandbox Organization Id
+  --plauti-cloud-api-key=plauti-cloud-api-key                                     (required) Plauti Cloud Api Key
+  --sandbox-name=sandbox-name                                                      (required) Sandbox Name
+  --sandbox-username=sandbox-username                                              Sandbox User Name
 
 EXAMPLES
-  $ sf plauti duplicatecheck sandbox link -u myOrg@example.com --organizationid 00DR0000001ossaMAA 
-  --sandboxname mysandbox --plauticloudapikey plauti_123_123456
-  $ sf plauti duplicatecheck sandbox link -u myOrg@example.com --sandboxusername scratch_org_1 
-  --sandboxname mysandbox --plauticloudapikey plauti_123_123456
+  $ sf plauti:deduplicate:sandbox:link --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456
+  $ sf plauti:deduplicate:sandbox:link -o myOrg@example.com --organization-id 00DR0000001ossaMAA --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456
 ```
 
-### List all Sandbox orgs linked to Production
-List all sandbox orgs
+#### `sf plauti:deduplicate:sandbox:list`
+
+List all linked sandbox organizations.
 
 ```
 USAGE
-  $ sf plauti duplicatecheck sandbox list --plauticloudapikey <string> [-u <string>] [--apiversion <string>] [--json] 
-  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf plauti:deduplicate:sandbox:list --plauti-cloud-api-key <string> [--target-org <string>] [--apiversion <string>] 
+  [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -u                                                                                username or alias for the target
+  -o, --target-org=target-org                                                      username or alias for the target org
+  --apiversion=apiversion                                                          override the api version used for
+                                                                                   api requests made by this command
+  --json                                                                           format output as json
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
+                                                                                   this command invocation
+  --plauti-cloud-api-key=plauti-cloud-api-key                                     (required) Plauti Cloud Api Key
 
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --plauticloudapikey=plauticloudapikey                                             (required) Plauti Cloud Api Key
-
-EXAMPLE
-  $ sf plauti duplicatecheck sandbox list -u myOrg@example.com --plauticloudapikey plauti_123_123456
+EXAMPLES
+  $ sf plauti:deduplicate:sandbox:list --target-org myOrg@example.com --plauti-cloud-api-key plauti_123_123456
+  $ sf plauti:deduplicate:sandbox:list -o myOrg@example.com --plauti-cloud-api-key plauti_123_123456
 ```
 
-### Unlink a Sandbox org from Production
-Unlink Sandbox from Production
+#### `sf plauti:deduplicate:sandbox:unlink`
+
+Unlink a sandbox from the production organization.
 
 ```
 USAGE
-  $ sf plauti duplicatecheck sandbox unlink --plauticloudapikey <string> [--organizationid <string>] 
-  [--sandboxusername <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel 
+  $ sf plauti:deduplicate:sandbox:unlink --plauti-cloud-api-key <string> [--organization-id <string>] 
+  [--sandbox-username <string>] [--target-org <string>] [--apiversion <string>] [--json] [--loglevel 
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -u                                                                                username or alias for the target
-
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --organizationid=organizationid                                                   Sandbox Organization Id
-
-  --plauticloudapikey=plauticloudapikey                                             (required) Plauti Cloud Api Key
-
-  --sandboxusername=sandboxusername                                                 Sandbox User Name
+  -o, --target-org=target-org                                                      username or alias for the target org
+  --apiversion=apiversion                                                          override the api version used for
+                                                                                   api requests made by this command
+  --json                                                                           format output as json
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
+                                                                                   this command invocation
+  --organization-id=organization-id                                                Sandbox Organization Id
+  --plauti-cloud-api-key=plauti-cloud-api-key                                     (required) Plauti Cloud Api Key
+  --sandbox-username=sandbox-username                                              Sandbox User Name
 
 EXAMPLES
-  $ sf plauti duplicatecheck sandbox unlink -u myOrg@example.com --organizationid 00DR0000001ossaMAA 
-  --plauticloudapikey plauti_123_123456
-  $ sf plauti duplicatecheck sandbox unlink -u myOrg@example.com --sandboxusername scratch_org_1 
-  --plauticloudapikey plauti_123_123456
+  $ sf plauti:deduplicate:sandbox:unlink --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --plauti-cloud-api-key plauti_123_123456
+  $ sf plauti:deduplicate:sandbox:unlink -o myOrg@example.com --organization-id 00DR0000001ossaMAA --plauti-cloud-api-key plauti_123_123456
 ```
 
+## Development
+
+### Prerequisites
+
+- Node.js 24.0.0+
+- npm 10+
+
+### Setup
+
+```bash
+git clone https://github.com/plauti/plauti-sf-cli-plugin.git
+cd plauti-sf-cli-plugin
+npm install
+```
+
+### Building
+
+```bash
+npm run build
+```
+
+### Testing
+
+This plugin uses Node.js native testing with zero external dependencies:
+
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage  
+npm test
+
+# Watch mode
+npm run test:watch
+```
+
+### Linting
+
+```bash
+# Check for linting issues
+npm run lint
+
+# Fix linting issues automatically
+npm run lint:fix
+```
+
+### Linking for Development
+
+```bash
+sf plugins link .
+```
+
+## Architecture
+
+### Modern Stack (v0.1.0+)
+
+This plugin has been modernized with:
+
+- **Node.js 24 LTS** - Latest LTS with native TypeScript support
+- **Salesforce CLI v2** - Modern `@salesforce/sf-plugins-core` architecture
+- **Native Testing** - Zero external testing dependencies using `node:test`
+- **ESLint** - Modern linting replacing deprecated TSLint
+- **Minimal Dependencies** - Only essential dependencies for security and performance
+
+### Commands Architecture
+
+All commands extend `SfCommand` from `@salesforce/sf-plugins-core` and follow these patterns:
+
+1. **Simple API Commands** - Direct REST API calls (license refresh)
+2. **Async Job Commands** - Submit job + polling mechanism (config import/export)
+3. **Complex Processing** - Multi-step operations with bulk data handling (CSV to job)
+4. **External API Integration** - Plauti Cloud API calls (sandbox management)
+
+### Modern CLI Standards
+
+This plugin follows modern Salesforce CLI standards:
+
+- **Modern Flags** - Uses `--target-org` with `-o` shorthand
+- **SF CLI Only** - Built exclusively for the modern Salesforce CLI
+- **Standard Architecture** - Follows `@salesforce/sf-plugins-core` patterns
+- **Comprehensive Testing** - 91 tests across 19 suites validate all functionality
+
+## Support
+
+- [Plauti Documentation](https://sdk.plauti.com/docs/plauti-cli-transfering-duplicate-check-configuration)
