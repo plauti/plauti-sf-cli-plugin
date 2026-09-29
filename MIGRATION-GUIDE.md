@@ -57,6 +57,27 @@ The target org flag has been updated to use the new Salesforce CLI v2 standard:
 -o, --target-org <org>
 ```
 
+### Flag Names
+
+All flags now follow the Salesforce CLI kebab-case convention. The old names are not accepted and fail with `Nonexistent flags`.
+
+| Command | Old Flag | New Flag |
+|---------|----------|----------|
+| all | `-u, --targetusername` | `-o, --target-org` |
+| all | `--apiversion` | removed |
+| all | `--loglevel` | removed |
+| `config:export`, `config:import` | `--pollinterval` | `--poll-interval` |
+| `csv:tojob` | `--sourceobject` | `--source-object` |
+| `csv:tojob` | `--matchobject` | `--match-object` |
+| `csv:tojob` | `--setmasterformerge` | `--set-master-for-merge` |
+| `sandbox:link`, `sandbox:list`, `sandbox:unlink` | `--plauticloudapikey` | `--plauti-cloud-api-key` |
+| `sandbox:link`, `sandbox:unlink` | `--organizationid` | `--organization-id` |
+| `sandbox:link` | `--sandboxname` | `--sandbox-name` |
+| `sandbox:link` | `--sandboxusername` | `--sandbox-username` |
+| `sandbox:unlink` | `--sandboxusername` | removed, `--organization-id` is now required |
+
+Every command gained `--verbose` for extra output such as job IDs, and the standard `--flags-dir`. Unchanged: `--file`, `--delimiter`, `--json`.
+
 ### Example Migration
 
 **Old Command:**
@@ -74,28 +95,28 @@ sf plauti:deduplicate:license:refresh --target-org myorg@example.com
 ### License Refresh
 - **Old:** `sf plauti:duplicatecheck:license:refresh`
 - **New:** `sf plauti:deduplicate:license:refresh`
-- **Changes:** Command name only, functionality identical
+- **Changes:** Command name and target org flag
 
 ### Config Export
 - **Old:** `sf plauti:duplicatecheck:config:export`
 - **New:** `sf plauti:deduplicate:config:export`  
-- **Changes:** Command name and target org flag format
+- **Changes:** Command name, target org flag, and flag names (see the table above)
 
 ### Config Import
 - **Old:** `sf plauti:duplicatecheck:config:import`
 - **New:** `sf plauti:deduplicate:config:import`
-- **Changes:** Command name and target org flag format
+- **Changes:** Command name, target org flag, and flag names (see the table above)
 
 ### CSV to Job
 - **Old:** `sf plauti:duplicatecheck:csv:tojob`
 - **New:** `sf plauti:deduplicate:csv:tojob`
-- **Changes:** Command name and target org flag format
+- **Changes:** Command name, target org flag, and flag names (see the table above)
 
 ### Sandbox Management
 - **Link:** `sf plauti:duplicatecheck:sandbox:link` → `sf plauti:deduplicate:sandbox:link`
 - **List:** `sf plauti:duplicatecheck:sandbox:list` → `sf plauti:deduplicate:sandbox:list`  
 - **Unlink:** `sf plauti:duplicatecheck:sandbox:unlink` → `sf plauti:deduplicate:sandbox:unlink`
-- **Changes:** Command names and target org flag format
+- **Changes:** Command names, target org flag, and flag names (see the table above). `sandbox:unlink` now requires `--organization-id` and no longer accepts `--sandbox-username`
 
 ## Breaking Changes
 
@@ -106,7 +127,12 @@ All commands now use `plauti:deduplicate:*` instead of `plauti:duplicatecheck:*`
 - Old: `-u, --targetusername`
 - New: `-o, --target-org`
 
-### 3. Salesforce CLI Version
+### 3. Flag Names
+- All flags use kebab-case, see the table under Flag Names
+- `--apiversion` and `--loglevel` were removed
+- `sandbox:unlink` requires `--organization-id` and no longer accepts `--sandbox-username`
+
+### 4. Salesforce CLI Version
 - Requires Salesforce CLI v2.x
 - Built with modern SF CLI framework for better performance and reliability
 
@@ -117,7 +143,7 @@ All commands maintain **100% functional compatibility** with their previous vers
 - Same business logic  
 - Same error handling
 - Same output formats
-- Same flag options (except target org format)
+- Same flags, renamed to kebab-case (see the table under Flag Names)
 
 ## Migration Script Example
 
@@ -140,6 +166,12 @@ sf plauti:deduplicate:license:refresh --target-org myorg@example.com
 
 # New script:  
 sf plauti:deduplicate:config:export --target-org myorg@example.com --file ./config.json
+
+# Old script:
+# sf plauti:duplicatecheck:csv:tojob -u myorg@example.com --file ./job.csv --sourceobject 001 --matchobject 001
+
+# New script:
+sf plauti:deduplicate:csv:tojob --target-org myorg@example.com --file ./job.csv --source-object 001 --match-object 001
 ```
 
 ## Validation Steps
@@ -176,6 +208,12 @@ Error: command plauti:deduplicate:license:refresh not found
 Error: No org configuration found for name undefined
 ```
 **Solution:** Use `--target-org` instead of `-u` or `--targetusername`
+
+**Issue:** Old flag names
+```
+Error (2): Nonexistent flags: --sourceobject, --matchobject
+```
+**Solution:** Rename the flags as listed under Flag Names, for example `--source-object` and `--match-object`
 
 ## Support
 

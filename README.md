@@ -7,7 +7,7 @@ This is a plugin for Salesforce SF CLI, that extends its functionality to also b
 ```bash
 $ sf plauti:deduplicate:license:refresh --target-org myorg
 $ sf plauti:deduplicate:config:export --target-org myorg --file config.json
-$ sf plauti:deduplicate:sandbox:link --target-org myorg --organization-id 00D... --plauti-cloud-api-key key
+$ sf plauti:deduplicate:sandbox:link --target-org myorg --sandbox-name mysandbox --plauti-cloud-api-key key
 ```
 
 ## 🔄 Migrating from Old Plugin?
@@ -15,7 +15,7 @@ $ sf plauti:deduplicate:sandbox:link --target-org myorg --organization-id 00D...
 If you're upgrading from the old `plauti-sfdx` package (which used `plauti:duplicatecheck:*` commands), see our [Migration Guide](MIGRATION-GUIDE.md) for a complete transition guide.
 
 [![Version](https://img.shields.io/npm/v/plauti-sf-cli-plugin.svg)](https://npmjs.org/package/plauti-sf-cli-plugin)
-[![License](https://img.shields.io/npm/l/plauti-sf-cli-plugin.svg)](https://github.com/plauti/plauti-sf-cli-plugin/blob/main/package.json)
+[![License](https://img.shields.io/npm/l/plauti-sf-cli-plugin.svg)](https://github.com/plauti/plauti-sf-cli-plugin/blob/master/package.json)
 
 ## ⚠️ IMPORTANT: SF CLI Required
 
@@ -67,6 +67,8 @@ Running the command above will open your browser and ask you to login to the Sal
 
 After installing the SF CLI, the Plauti Salesforce CLI Plugin, and authenticating SF CLI with a Salesforce org as described above, you are able to make use of the following Plauti CLI commands.
 
+Commands accept either `:` or a space between topic parts, so `sf plauti:deduplicate:license:refresh` and `sf plauti deduplicate license refresh` are the same command. Every command also accepts `--help`.
+
 ### License Management
 
 #### `sf plauti:deduplicate:license:refresh`
@@ -75,20 +77,18 @@ Refresh your Plauti Deduplicate for Salesforce license.
 
 ```
 USAGE
-  $ sf plauti:deduplicate:license:refresh [--target-org <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf plauti:deduplicate:license:refresh -o <value> [--verbose] [--json] [--flags-dir <value>]
 
-OPTIONS
-  -o, --target-org=target-org                                                      username or alias for the target org
-  --apiversion=apiversion                                                          override the api version used for
-                                                                                   api requests made by this command
-  --json                                                                           format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
-                                                                                   this command invocation
+FLAGS
+  -o, --target-org=<value>  (required) Username or alias of the target org. Not required if the `target-org` configuration variable is already set.
+      --verbose             Show verbose output including job IDs and file paths
+
+GLOBAL FLAGS
+      --json               Format output as json
+      --flags-dir=<value>  Import flag values from a directory.
 
 EXAMPLES
   $ sf plauti:deduplicate:license:refresh --target-org myOrg@example.com
-  $ sf plauti:deduplicate:license:refresh -o myOrg@example.com
 ```
 
 ### Configuration Management
@@ -99,23 +99,21 @@ Export Plauti Deduplicate configuration to a file.
 
 ```
 USAGE
-  $ sf plauti:deduplicate:config:export --file <filepath> [--pollinterval <integer>] [--target-org <string>] 
-  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf plauti:deduplicate:config:export -o <value> --file <value> [--poll-interval <value>] [--verbose] [--json] [--flags-dir <value>]
 
-OPTIONS
-  -o, --target-org=target-org                                                      username or alias for the target org
-  --apiversion=apiversion                                                          override the api version used for
-                                                                                   api requests made by this command
-  --file=file                                                                      (required) Export file path and name
-  --json                                                                           format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
-                                                                                   this command invocation
-  --pollinterval=pollinterval                                                      [default: 3] Poll interval in
-                                                                                   seconds
+FLAGS
+  -o, --target-org=<value>     (required) Username or alias of the target org. Not required if the `target-org` configuration variable is already set.
+      --file=<value>           (required) Export file path and name
+      --poll-interval=<value>  [default: 3] Poll interval in seconds
+      --verbose                Show verbose output including job IDs and file paths
+
+GLOBAL FLAGS
+      --json               Format output as json
+      --flags-dir=<value>  Import flag values from a directory.
 
 EXAMPLES
   $ sf plauti:deduplicate:config:export --target-org myOrg@example.com --file ./export/test_config.json
-  $ sf plauti:deduplicate:config:export -o myOrg@example.com --file ./export/test_config.json
+  $ sf plauti:deduplicate:config:export --target-org myOrg@example.com --file ./export/test_config.json --poll-interval 10
 ```
 
 #### `sf plauti:deduplicate:config:import`
@@ -124,23 +122,21 @@ Import Plauti Deduplicate configuration from a file.
 
 ```
 USAGE
-  $ sf plauti:deduplicate:config:import --file <filepath> [--pollinterval <integer>] [--target-org <string>] 
-  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf plauti:deduplicate:config:import -o <value> --file <value> [--poll-interval <value>] [--verbose] [--json] [--flags-dir <value>]
 
-OPTIONS
-  -o, --target-org=target-org                                                      username or alias for the target org
-  --apiversion=apiversion                                                          override the api version used for
-                                                                                   api requests made by this command
-  --file=file                                                                      (required) File path
-  --json                                                                           format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
-                                                                                   this command invocation
-  --pollinterval=pollinterval                                                      [default: 3] Poll interval in
-                                                                                   seconds
+FLAGS
+  -o, --target-org=<value>     (required) Username or alias of the target org. Not required if the `target-org` configuration variable is already set.
+      --file=<value>           (required) File path
+      --poll-interval=<value>  [default: 3] Poll interval in seconds
+      --verbose                Show verbose output including job IDs and file paths
+
+GLOBAL FLAGS
+      --json               Format output as json
+      --flags-dir=<value>  Import flag values from a directory.
 
 EXAMPLES
   $ sf plauti:deduplicate:config:import --target-org myOrg@example.com --file ./export/test_config.json
-  $ sf plauti:deduplicate:config:import -o myOrg@example.com --file ./export/test_config.json
+  $ sf plauti:deduplicate:config:import --target-org myOrg@example.com --file ./export/test_config.json --poll-interval 10
 ```
 
 ### Data Processing
@@ -151,26 +147,24 @@ Create a Plauti Deduplicate job from a CSV file containing potential duplicates.
 
 ```
 USAGE
-  $ sf plauti:deduplicate:csv:tojob --file <filepath> --sourceobject <string> --matchobject <string> 
-  [--setmasterformerge] [--delimiter <string>] [--target-org <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf plauti:deduplicate:csv:tojob -o <value> --file <value> --source-object <value> --match-object <value> [--set-master-for-merge] [--delimiter <value>] [--verbose] [--json] [--flags-dir <value>]
 
-OPTIONS
-  -o, --target-org=target-org                                                      username or alias for the target org
-  --apiversion=apiversion                                                          override the api version used for
-                                                                                   api requests made by this command
-  --delimiter=delimiter                                                            [default: ,] Csv Delimiter
-  --file=file                                                                      (required) Csv file path
-  --json                                                                           format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
-                                                                                   this command invocation
-  --matchobject=matchobject                                                        (required) Match Object Prefix
-  --setmasterformerge                                                              Set Master record for Merge
-  --sourceobject=sourceobject                                                      (required) Source Object Prefix
+FLAGS
+  -o, --target-org=<value>     (required) Username or alias of the target org. Not required if the `target-org` configuration variable is already set.
+      --file=<value>           (required) Csv file path
+      --source-object=<value>  (required) Source Object Prefix
+      --match-object=<value>   (required) Match Object Prefix
+      --set-master-for-merge   Set Master record for Merge
+      --delimiter=<value>      [default: ,] Csv Delimiter
+      --verbose                Show verbose output including job IDs and file paths
+
+GLOBAL FLAGS
+      --json               Format output as json
+      --flags-dir=<value>  Import flag values from a directory.
 
 EXAMPLES
-  $ sf plauti:deduplicate:csv:tojob --target-org myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001
-  $ sf plauti:deduplicate:csv:tojob -o myOrg@example.com --file ./myFirstJob.csv --sourceobject 001 --matchobject 001
+  $ sf plauti:deduplicate:csv:tojob --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001
+  $ sf plauti:deduplicate:csv:tojob --target-org myOrg@example.com --file ./myFirstJob.csv --source-object 001 --match-object 001 --set-master-for-merge
 ```
 
 **CSV Format:**
@@ -188,25 +182,23 @@ Link a sandbox organization to production for license sharing.
 
 ```
 USAGE
-  $ sf plauti:deduplicate:sandbox:link --sandbox-name <string> --plauti-cloud-api-key <string> [--organization-id 
-  <string>] [--sandbox-username <string>] [--target-org <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf plauti:deduplicate:sandbox:link -o <value> --sandbox-name <value> --plauti-cloud-api-key <value> [--organization-id <value>] [--sandbox-username <value>] [--verbose] [--json] [--flags-dir <value>]
 
-OPTIONS
-  -o, --target-org=target-org                                                      username or alias for the target org
-  --apiversion=apiversion                                                          override the api version used for
-                                                                                   api requests made by this command
-  --json                                                                           format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
-                                                                                   this command invocation
-  --organization-id=organization-id                                                Sandbox Organization Id
-  --plauti-cloud-api-key=plauti-cloud-api-key                                     (required) Plauti Cloud Api Key
-  --sandbox-name=sandbox-name                                                      (required) Sandbox Name
-  --sandbox-username=sandbox-username                                              Sandbox User Name
+FLAGS
+  -o, --target-org=<value>            (required) Username or alias of the target org. Not required if the `target-org` configuration variable is already set.
+      --organization-id=<value>       Sandbox Organization Id
+      --sandbox-username=<value>      Sandbox User Name
+      --sandbox-name=<value>          (required) Sandbox Name
+      --plauti-cloud-api-key=<value>  (required) Plauti Cloud Api Key
+      --verbose                       Show verbose output including job IDs and file paths
+
+GLOBAL FLAGS
+      --json               Format output as json
+      --flags-dir=<value>  Import flag values from a directory.
 
 EXAMPLES
   $ sf plauti:deduplicate:sandbox:link --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456
-  $ sf plauti:deduplicate:sandbox:link -o myOrg@example.com --organization-id 00DR0000001ossaMAA --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456
+  $ sf plauti:deduplicate:sandbox:link --target-org myOrg@example.com --sandbox-username scratch_org_1 --sandbox-name mysandbox --plauti-cloud-api-key plauti_123_123456
 ```
 
 #### `sf plauti:deduplicate:sandbox:list`
@@ -215,21 +207,19 @@ List all linked sandbox organizations.
 
 ```
 USAGE
-  $ sf plauti:deduplicate:sandbox:list --plauti-cloud-api-key <string> [--target-org <string>] [--apiversion <string>] 
-  [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf plauti:deduplicate:sandbox:list -o <value> --plauti-cloud-api-key <value> [--verbose] [--json] [--flags-dir <value>]
 
-OPTIONS
-  -o, --target-org=target-org                                                      username or alias for the target org
-  --apiversion=apiversion                                                          override the api version used for
-                                                                                   api requests made by this command
-  --json                                                                           format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
-                                                                                   this command invocation
-  --plauti-cloud-api-key=plauti-cloud-api-key                                     (required) Plauti Cloud Api Key
+FLAGS
+  -o, --target-org=<value>            (required) Username or alias of the target org. Not required if the `target-org` configuration variable is already set.
+      --plauti-cloud-api-key=<value>  (required) Plauti Cloud Api Key
+      --verbose                       Show verbose output including job IDs and file paths
+
+GLOBAL FLAGS
+      --json               Format output as json
+      --flags-dir=<value>  Import flag values from a directory.
 
 EXAMPLES
   $ sf plauti:deduplicate:sandbox:list --target-org myOrg@example.com --plauti-cloud-api-key plauti_123_123456
-  $ sf plauti:deduplicate:sandbox:list -o myOrg@example.com --plauti-cloud-api-key plauti_123_123456
 ```
 
 #### `sf plauti:deduplicate:sandbox:unlink`
@@ -238,24 +228,20 @@ Unlink a sandbox from the production organization.
 
 ```
 USAGE
-  $ sf plauti:deduplicate:sandbox:unlink --plauti-cloud-api-key <string> [--organization-id <string>] 
-  [--sandbox-username <string>] [--target-org <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf plauti:deduplicate:sandbox:unlink -o <value> --organization-id <value> --plauti-cloud-api-key <value> [--verbose] [--json] [--flags-dir <value>]
 
-OPTIONS
-  -o, --target-org=target-org                                                      username or alias for the target org
-  --apiversion=apiversion                                                          override the api version used for
-                                                                                   api requests made by this command
-  --json                                                                           format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL) [default: warn] logging level for
-                                                                                   this command invocation
-  --organization-id=organization-id                                                Sandbox Organization Id
-  --plauti-cloud-api-key=plauti-cloud-api-key                                     (required) Plauti Cloud Api Key
-  --sandbox-username=sandbox-username                                              Sandbox User Name
+FLAGS
+  -o, --target-org=<value>            (required) Username or alias of the target org. Not required if the `target-org` configuration variable is already set.
+      --organization-id=<value>       (required) Sandbox Organization Id
+      --plauti-cloud-api-key=<value>  (required) Plauti Cloud Api Key
+      --verbose                       Show verbose output including job IDs and file paths
+
+GLOBAL FLAGS
+      --json               Format output as json
+      --flags-dir=<value>  Import flag values from a directory.
 
 EXAMPLES
   $ sf plauti:deduplicate:sandbox:unlink --target-org myOrg@example.com --organization-id 00DR0000001ossaMAA --plauti-cloud-api-key plauti_123_123456
-  $ sf plauti:deduplicate:sandbox:unlink -o myOrg@example.com --organization-id 00DR0000001ossaMAA --plauti-cloud-api-key plauti_123_123456
 ```
 
 ## Development
@@ -281,13 +267,10 @@ npm run build
 
 ### Testing
 
-This plugin uses Node.js native testing with zero external dependencies:
+This plugin uses the Node.js native test runner (`node:test`), with tsx to run the TypeScript sources:
 
 ```bash
-# Run tests
-npm test
-
-# Run tests with coverage  
+# Run tests with coverage
 npm test
 
 # Watch mode
@@ -318,7 +301,7 @@ This plugin has been modernized with:
 
 - **Node.js 24 LTS** - Latest LTS with native TypeScript support
 - **Salesforce CLI v2** - Modern `@salesforce/sf-plugins-core` architecture
-- **Native Testing** - Zero external testing dependencies using `node:test`
+- **Native Testing** - Node.js `node:test` runner, tsx for TypeScript
 - **ESLint** - Modern linting replacing deprecated TSLint
 - **Minimal Dependencies** - Only essential dependencies for security and performance
 
