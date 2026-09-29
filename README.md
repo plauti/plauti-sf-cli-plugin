@@ -342,4 +342,4 @@ This plugin follows modern Salesforce CLI standards:
 
 ## Support
 
-- [Plauti Documentation](https://www.plauti.com/hub/developer/salesforce/plauti-cli/cli-commands/plauti-cli-transfering-duplicate-check-configuration)
+- [Plauti Documentation](https://www.plauti.com/hub/developer/salesforce/plauti-cli)
