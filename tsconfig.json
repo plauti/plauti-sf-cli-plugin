@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2024",
     "lib": ["ES2024", "DOM"],
-    "module": "ESNext",
+    "module": "NodeNext",
     "declaration": true,
     "declarationMap": true,
     "outDir": "./lib",
@@ -13,7 +13,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "noImplicitReturns": true,

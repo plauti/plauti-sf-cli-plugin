@@ -2,7 +2,7 @@ import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
-import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging';
+import { createLogger, formatError, LoggingUtility } from '../../../../utils/logging.js';
 import { LicenseService } from '../../../../services/LicenseService.js';
 import { LicenseClientImpl } from '../../../../services/clients/LicenseClient.js';
 
